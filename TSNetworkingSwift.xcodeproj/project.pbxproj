@@ -10,6 +10,8 @@
 		2B599B001947B92900A40C65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599AFF1947B92900A40C65 /* AppDelegate.swift */; };
 		2B599B021947B92900A40C65 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B599B011947B92900A40C65 /* Images.xcassets */; };
 		2B599B0E1947B92900A40C65 /* TSNetworkingSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */; };
+		2B599B1A1947B96D00A40C65 /* TSNetworking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B191947B96D00A40C65 /* TSNetworking.swift */; };
+		2B599B241947BD1E00A40C65 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B599B231947BD1E00A40C65 /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +29,41 @@
 			remoteGlobalIDString = 2B599AF91947B92900A40C65;
 			remoteInfo = TSNetworkingSwift;
 		};
+		2B599B171947B92A00A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
+		2B599B1B1947BC8C00A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
+		2B599B1D1947BCC700A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
+		2B599B1F1947BCC700A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
+		2B599B211947BD0F00A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +74,8 @@
 		2B599B071947B92900A40C65 /* TSNetworkingSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TSNetworkingSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B599B0C1947B92900A40C65 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSNetworkingSwiftTests.swift; sourceTree = "<group>"; };
+		2B599B191947B96D00A40C65 /* TSNetworking.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TSNetworking.swift; sourceTree = "<group>"; };
+		2B599B231947BD1E00A40C65 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B599B241947BD1E00A40C65 /* Security.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +100,7 @@
 		2B599AEF1947B90B00A40C65 = {
 			isa = PBXGroup;
 			children = (
+				2B599B231947BD1E00A40C65 /* Security.framework */,
 				2B599AFC1947B92900A40C65 /* TSNetworkingSwift */,
 				2B599B0A1947B92900A40C65 /* TSNetworkingSwiftTests */,
 				2B599AFB1947B92900A40C65 /* Products */,
@@ -81,6 +122,7 @@
 				2B599AFF1947B92900A40C65 /* AppDelegate.swift */,
 				2B599B011947B92900A40C65 /* Images.xcassets */,
 				2B599AFD1947B92900A40C65 /* Supporting Files */,
+				2B599B191947B96D00A40C65 /* TSNetworking.swift */,
 			);
 			path = TSNetworkingSwift;
 			sourceTree = "<group>";
@@ -143,6 +185,11 @@
 			dependencies = (
 				2B599B091947B92900A40C65 /* PBXTargetDependency */,
 				2B599B161947B92A00A40C65 /* PBXTargetDependency */,
+				2B599B181947B92A00A40C65 /* PBXTargetDependency */,
+				2B599B1C1947BC8C00A40C65 /* PBXTargetDependency */,
+				2B599B1E1947BCC700A40C65 /* PBXTargetDependency */,
+				2B599B201947BCC700A40C65 /* PBXTargetDependency */,
+				2B599B221947BD0F00A40C65 /* PBXTargetDependency */,
 			);
 			name = TSNetworkingSwiftTests;
 			productName = TSNetworkingSwiftTests;
@@ -207,6 +254,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B599B1A1947B96D00A40C65 /* TSNetworking.swift in Sources */,
 				2B599B001947B92900A40C65 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -231,6 +279,31 @@
 			isa = PBXTargetDependency;
 			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
 			targetProxy = 2B599B151947B92A00A40C65 /* PBXContainerItemProxy */;
+		};
+		2B599B181947B92A00A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B171947B92A00A40C65 /* PBXContainerItemProxy */;
+		};
+		2B599B1C1947BC8C00A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B1B1947BC8C00A40C65 /* PBXContainerItemProxy */;
+		};
+		2B599B1E1947BCC700A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B1D1947BCC700A40C65 /* PBXContainerItemProxy */;
+		};
+		2B599B201947BCC700A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B1F1947BCC700A40C65 /* PBXContainerItemProxy */;
+		};
+		2B599B221947BD0F00A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B211947BD0F00A40C65 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
