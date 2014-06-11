@@ -8,8 +8,8 @@
 import Foundation
 import UIKit
 
-typealias TSNWSuccessBlock = (resultObject: AnyObject, request: NSURLRequest, response: NSURLResponse) -> Void
-typealias TSNWErrorBlock = (resultObject: AnyObject?, error: NSError, request: NSURLRequest, response: NSURLResponse) -> Void
+typealias TSNWSuccessBlock = (resultObject: AnyObject, request: NSURLRequest, response: NSURLResponse?) -> Void
+typealias TSNWErrorBlock = (resultObject: AnyObject?, error: NSError, request: NSURLRequest, response: NSURLResponse?) -> Void
 typealias TSNWDownloadProgressBlock = (bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) -> Void
 typealias TSNWUploadProgressBlock = (bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) -> Void
 typealias URLSessionTaskCompletion = (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void
@@ -21,6 +21,7 @@ class blockHolder {
     var errorBlock: TSNWErrorBlock?
     var downloadProgressBlock: TSNWDownloadProgressBlock?
     var uploadProgressBlock: TSNWUploadProgressBlock?
+    var downloadCompletionBlock: URLSessionDownloadTaskCompletion?
 }
 
 enum HTTP_METHOD: String {
@@ -94,48 +95,48 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     func taskCompletionBlockForRequest(weakRequest: NSMutableURLRequest, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> URLSessionTaskCompletion {
         weak var weakSelf = self
         var completionBlock: URLSessionTaskCompletion = { (data, response, error) -> Void in
-            if nil == weakSelf { return }
-            var strongSelf = weakSelf!
-            strongSelf.activeTasks = max(strongSelf.activeTasks - 1, 0)
-            if TSNWForeground.activeTasks == 0 && TSNWBackground.activeTasks == 0 {
-                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-            }
-            var stringEncoding = NSUTF8StringEncoding
-            var useableContentType = ""
-            var encoding: NSStringEncoding = NSUTF8StringEncoding
-            if let httpResponse = response as? NSHTTPURLResponse {
-                var responseHeaders = httpResponse.allHeaderFields
-                if let contentType: NSString = responseHeaders.valueForKey("Content-Type") as? NSString {
-                    var useableContentType: NSString = contentType.lowercaseString
-                    var indexOfSemi = useableContentType.rangeOfString(";").location
-                    if indexOfSemi != NSNotFound { // looks like we're still doing this in Swift :(
-                        useableContentType = useableContentType.substringToIndex(indexOfSemi)
+            if let strongSelf = weakSelf {
+                strongSelf.activeTasks = max(strongSelf.activeTasks - 1, 0)
+                if TSNWForeground.activeTasks == 0 && TSNWBackground.activeTasks == 0 {
+                    UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                }
+                var stringEncoding = NSUTF8StringEncoding
+                var useableContentType = ""
+                var encoding: NSStringEncoding = NSUTF8StringEncoding
+                if let httpResponse = response as? NSHTTPURLResponse {
+                    var responseHeaders = httpResponse.allHeaderFields
+                    if let contentType: NSString = responseHeaders.valueForKey("Content-Type") as? NSString {
+                        var useableContentType: NSString = contentType.lowercaseString
+                        var indexOfSemi = useableContentType.rangeOfString(";").location
+                        if indexOfSemi != NSNotFound { // looks like we're still doing this in Swift :(
+                            useableContentType = useableContentType.substringToIndex(indexOfSemi)
+                        }
+                    }
+                    if let encodingName = httpResponse.textEncodingName  {
+                        var tmpEncoding = CFStringConvertIANACharSetNameToEncoding(encodingName.bridgeToObjectiveC() as CFString)
+                        if tmpEncoding != kCFStringEncodingInvalidId {
+                            encoding = CFStringConvertEncodingToNSStringEncoding(tmpEncoding)
+                        }
                     }
                 }
-                if let encodingName = httpResponse.textEncodingName  {
-                    var tmpEncoding = CFStringConvertIANACharSetNameToEncoding(encodingName.bridgeToObjectiveC() as CFString)
-                    if tmpEncoding != kCFStringEncodingInvalidId {
-                        encoding = CFStringConvertEncodingToNSStringEncoding(tmpEncoding)
+                var parsedObject: NSObject
+                if nil != error && (nil == data || data.length <= 0) {
+                    parsedObject = error!.localizedDescription;
+                } else {
+                    if useableContentType == "" {
+                        useableContentType = "text"
                     }
+                    var parsedObject: AnyObject = strongSelf.resultBasedOnContentType(useableContentType, encoding: encoding, data: data)
                 }
-            }
-            var parsedObject: NSObject
-            if nil != error && (nil == data || data.length <= 0) {
-                parsedObject = error!.localizedDescription;
-            } else {
-                if useableContentType == "" {
-                    useableContentType = "text"
+                if let anError = strongSelf.validateResponse(response) {
+                    if nil != errorBlock {
+                        errorBlock(resultObject: parsedObject, error: anError, request: weakRequest, response: response)
+                    }
+                    return
                 }
-                var parsedObject: AnyObject = strongSelf.resultBasedOnContentType(useableContentType, encoding: encoding, data: data)
-            }
-            if let anError = strongSelf.validateResponse(response) {
-                if nil != errorBlock {
-                    errorBlock(resultObject: parsedObject, error: anError, request: weakRequest, response: response)
+                if nil != successBlock {
+                    successBlock(resultObject: parsedObject, request: weakRequest, response: response)
                 }
-                return
-            }
-            if nil != successBlock {
-                successBlock(resultObject: parsedObject, request: weakRequest, response: response)
             }
         };
         return completionBlock
@@ -287,5 +288,91 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         UIApplication.sharedApplication().networkActivityIndicatorVisible = true
         self.activeTasks++
         task.resume()
+    }
+    
+    func downloadFromFullFullURL(sourceURLString: NSString, destinationPathString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWDownloadProgressBlock, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionDownloadTask {
+        
+        var request = NSMutableURLRequest(URL: NSURL(string: sourceURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
+        request.HTTPMethod = HTTP_METHOD.POST.toRaw()
+        
+        weak var weakRequest = request
+        weak var weakSelf = self
+        
+        var completionBlock: URLSessionDownloadTaskCompletion = { (location, error) -> Void in
+            if let strongSelf = weakSelf {
+                strongSelf.activeTasks = max(strongSelf.activeTasks - 1, 0)
+                if (TSNWForeground.activeTasks == 0 && TSNWBackground.activeTasks == 0) {
+                    UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                }
+                
+                if nil != error {
+                    if nil != errorBlock {
+                        errorBlock(resultObject: nil, error: error, request: weakRequest!, response: nil)
+                    }
+                    return
+                }
+                
+                // does the downloaded file exist?
+                var fm = NSFileManager()
+                if !fm.fileExistsAtPath(location.path) {
+                    // aint this some shit, it finished without error, but the file is not available at location
+                    var text = NSLocalizedString("Unable to locate downloaded file", comment: "")
+                    let notFoundError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                    if nil != errorBlock {
+                        errorBlock(resultObject: nil, error: notFoundError, request: weakRequest!, response: nil)
+                    }
+                    return
+                }
+                
+                // delete an existing file at the programmers destination path string
+                var error: NSError?
+                if fm.fileExistsAtPath(destinationPathString) {
+                    fm.removeItemAtPath(destinationPathString, error: &error)
+                }
+                
+                if (nil != error) {
+                    // son of a bitch
+                    var text = NSLocalizedString("Download success, however destination path already exists, and that file was unable to be deleted", comment: "")
+                    let cantDeleteError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                    if nil != errorBlock {
+                        errorBlock(resultObject: nil, error: cantDeleteError, request: weakRequest!, response: nil)
+                    }
+                    return;
+                }
+                
+                // move the file to the programmers destination
+                fm.moveItemAtPath(location.path, toPath:destinationPathString, error:&error);
+                if (nil != error) {
+                    // double son of a bitch
+                    var text = NSLocalizedString("Download success, however unable to move downloaded file to the destination path.", comment: "");
+                    let cantMoveError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                    if nil != errorBlock {
+                        errorBlock(resultObject: nil, error: cantMoveError, request: weakRequest!, response: nil)
+                    }
+                    return;
+                }
+                
+                // all worked as intended
+                if nil != successBlock {
+                    successBlock(resultObject: location, request: weakRequest!, response: nil)
+                }
+            }
+        }
+        
+        self.addHeaders(additionalHeaders!, request: request)
+        var downloadTask = sharedURLSession.downloadTaskWithRequest(request)
+        if nil != progressBlock {
+            var holder = blockHolder()
+            holder.downloadProgressBlock = progressBlock
+            self.downloadProgressBlocks.setObject(holder, forKey: downloadTask.taskIdentifier)
+        }
+        var holder = blockHolder()
+        holder.downloadCompletionBlock = completionBlock
+        self.downloadCompletionBlocks.setObject(holder, forKey: downloadTask.taskIdentifier)
+        
+        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+        self.activeTasks++
+        downloadTask.resume()
+        return downloadTask
     }
 }
