@@ -1,0 +1,462 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2B599B001947B92900A40C65 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599AFF1947B92900A40C65 /* AppDelegate.swift */; };
+		2B599B021947B92900A40C65 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2B599B011947B92900A40C65 /* Images.xcassets */; };
+		2B599B0E1947B92900A40C65 /* TSNetworkingSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2B599B081947B92900A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
+		2B599B151947B92A00A40C65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2B599AFA1947B92900A40C65 /* TSNetworkingSwift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TSNetworkingSwift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B599AFE1947B92900A40C65 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2B599AFF1947B92900A40C65 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2B599B011947B92900A40C65 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		2B599B071947B92900A40C65 /* TSNetworkingSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TSNetworkingSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B599B0C1947B92900A40C65 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSNetworkingSwiftTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2B599AF71947B92900A40C65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2B599B041947B92900A40C65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2B599AEF1947B90B00A40C65 = {
+			isa = PBXGroup;
+			children = (
+				2B599AFC1947B92900A40C65 /* TSNetworkingSwift */,
+				2B599B0A1947B92900A40C65 /* TSNetworkingSwiftTests */,
+				2B599AFB1947B92900A40C65 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2B599AFB1947B92900A40C65 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2B599AFA1947B92900A40C65 /* TSNetworkingSwift.app */,
+				2B599B071947B92900A40C65 /* TSNetworkingSwiftTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2B599AFC1947B92900A40C65 /* TSNetworkingSwift */ = {
+			isa = PBXGroup;
+			children = (
+				2B599AFF1947B92900A40C65 /* AppDelegate.swift */,
+				2B599B011947B92900A40C65 /* Images.xcassets */,
+				2B599AFD1947B92900A40C65 /* Supporting Files */,
+			);
+			path = TSNetworkingSwift;
+			sourceTree = "<group>";
+		};
+		2B599AFD1947B92900A40C65 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2B599AFE1947B92900A40C65 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2B599B0A1947B92900A40C65 /* TSNetworkingSwiftTests */ = {
+			isa = PBXGroup;
+			children = (
+				2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */,
+				2B599B0B1947B92900A40C65 /* Supporting Files */,
+			);
+			path = TSNetworkingSwiftTests;
+			sourceTree = "<group>";
+		};
+		2B599B0B1947B92900A40C65 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				2B599B0C1947B92900A40C65 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2B599AF91947B92900A40C65 /* TSNetworkingSwift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B599B0F1947B92900A40C65 /* Build configuration list for PBXNativeTarget "TSNetworkingSwift" */;
+			buildPhases = (
+				2B599AF61947B92900A40C65 /* Sources */,
+				2B599AF71947B92900A40C65 /* Frameworks */,
+				2B599AF81947B92900A40C65 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TSNetworkingSwift;
+			productName = TSNetworkingSwift;
+			productReference = 2B599AFA1947B92900A40C65 /* TSNetworkingSwift.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2B599B061947B92900A40C65 /* TSNetworkingSwiftTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B599B121947B92900A40C65 /* Build configuration list for PBXNativeTarget "TSNetworkingSwiftTests" */;
+			buildPhases = (
+				2B599B031947B92900A40C65 /* Sources */,
+				2B599B041947B92900A40C65 /* Frameworks */,
+				2B599B051947B92900A40C65 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2B599B091947B92900A40C65 /* PBXTargetDependency */,
+				2B599B161947B92A00A40C65 /* PBXTargetDependency */,
+			);
+			name = TSNetworkingSwiftTests;
+			productName = TSNetworkingSwiftTests;
+			productReference = 2B599B071947B92900A40C65 /* TSNetworkingSwiftTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2B599AF01947B90B00A40C65 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0600;
+				TargetAttributes = {
+					2B599AF91947B92900A40C65 = {
+						CreatedOnToolsVersion = 6.0;
+					};
+					2B599B061947B92900A40C65 = {
+						CreatedOnToolsVersion = 6.0;
+						TestTargetID = 2B599AF91947B92900A40C65;
+					};
+				};
+			};
+			buildConfigurationList = 2B599AF31947B90B00A40C65 /* Build configuration list for PBXProject "TSNetworkingSwift" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 2B599AEF1947B90B00A40C65;
+			productRefGroup = 2B599AFB1947B92900A40C65 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2B599AF91947B92900A40C65 /* TSNetworkingSwift */,
+				2B599B061947B92900A40C65 /* TSNetworkingSwiftTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2B599AF81947B92900A40C65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B599B021947B92900A40C65 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2B599B051947B92900A40C65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2B599AF61947B92900A40C65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B599B001947B92900A40C65 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2B599B031947B92900A40C65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B599B0E1947B92900A40C65 /* TSNetworkingSwiftTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2B599B091947B92900A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B081947B92900A40C65 /* PBXContainerItemProxy */;
+		};
+		2B599B161947B92A00A40C65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B599B151947B92A00A40C65 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2B599AF41947B90B00A40C65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		2B599AF51947B90B00A40C65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		2B599B101947B92900A40C65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = TSNetworkingSwift/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				METAL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2B599B111947B92900A40C65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = TSNetworkingSwift/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				METAL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2B599B131947B92900A40C65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/TSNetworkingSwift.app/TSNetworkingSwift";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = TSNetworkingSwiftTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				METAL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TEST_HOST = "$(BUNDLE_LOADER)";
+			};
+			name = Debug;
+		};
+		2B599B141947B92900A40C65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/TSNetworkingSwift.app/TSNetworkingSwift";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = TSNetworkingSwiftTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				METAL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B599AF31947B90B00A40C65 /* Build configuration list for PBXProject "TSNetworkingSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B599AF41947B90B00A40C65 /* Debug */,
+				2B599AF51947B90B00A40C65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2B599B0F1947B92900A40C65 /* Build configuration list for PBXNativeTarget "TSNetworkingSwift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B599B101947B92900A40C65 /* Debug */,
+				2B599B111947B92900A40C65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		2B599B121947B92900A40C65 /* Build configuration list for PBXNativeTarget "TSNetworkingSwiftTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B599B131947B92900A40C65 /* Debug */,
+				2B599B141947B92900A40C65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2B599AF01947B90B00A40C65 /* Project object */;
+}
