@@ -8,6 +8,11 @@
 
 import XCTest
 
+let kNoAuthNeeded = "http://localhost:8081";
+let kAuthNeeded = "http://localhost:8080";
+let kJSON = "http://localhost:8083";
+let kMultipartUpload = "http://localhost:8082/upload";
+
 class TSNetworkingSwiftTests: XCTestCase {
     
     override func setUp() {
@@ -20,16 +25,48 @@ class TSNetworkingSwiftTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
-    }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock() {
-            // Put the code you want to measure the time of here.
+    func testGet() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let testPath = "something"
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertTrue(request.URL.lastPathComponent == testPath, "path wasn't appended")
+            testFinished.fulfill()
         }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.performDataTaskWithRelativePath(testPath, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        waitForExpectationsWithTimeout(4, handler: nil)
     }
     
+    func testGetAdditionalHeaders() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            var requestHeaders = request.allHTTPHeaderFields
+            XCTAssertTrue(requestHeaders.valueForKey("Accept").isEqualToString("application/json"), "Accept header missing")
+            XCTAssertTrue(requestHeaders.valueForKey("Content-Type").isEqualToString("application/json"), "Content-Type header missing")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
+        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
 }
