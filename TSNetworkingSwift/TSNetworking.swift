@@ -232,7 +232,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
     }
     
-    // PUBLIC
+    // PUBLIC (when apple get around to giving us access modifiers like private and protected etc)
     
     func setBaseURLString(baseURLString: NSString) {
         self.baseURL = NSURL.URLWithString(baseURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding));

@@ -69,4 +69,25 @@ class TSNetworkingSwiftTests: XCTestCase {
         TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
         waitForExpectationsWithTimeout(4, handler: nil)
     }
+    
+    func testGetWithParameters() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            var shouldBeURL = "\(kNoAuthNeeded)?key=value"
+            XCTAssertEqual(request.URL.absoluteString, shouldBeURL, "the query string wasn't set correctly, it was \(request.URL.absoluteString)")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: additionalParams, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
 }
