@@ -17,6 +17,8 @@ class TSNetworkingSwiftTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
+        TSNWForeground.removeAllSessionHeaders()
+        TSNWBackground.removeAllSessionHeaders()
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
@@ -88,6 +90,26 @@ class TSNetworkingSwiftTests: XCTestCase {
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
         TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: additionalParams, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    func testGetWithUsernameAndPassword() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            NSLog("\n\n\n\(request?.URL)\n\(request?.allHTTPHeaderFields)\n\n\n")
+            testFinished.fulfill()
+        }
+        TSNWForeground.setBaseURLString(kAuthNeeded)
+        TSNWForeground.setBasicAuth("hack", pass: "thegibson")
+        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
         waitForExpectationsWithTimeout(4, handler: nil)
     }
 }
