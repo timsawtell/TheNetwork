@@ -30,7 +30,7 @@ class TSNetworkingSwiftTests: XCTestCase {
     /*
     * GET tests
     */
-    
+
     func testGet() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -156,7 +156,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("ourLord.jpeg")
-
+        NSLog("destination path: \(destinationPath)")
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             let fm = NSFileManager()
@@ -178,9 +178,44 @@ class TSNetworkingSwiftTests: XCTestCase {
             NSLog("Download written: \(bytesWritten), TotalBytesWritten: \(totalBytesWritten), expectedToWrite: \(totalBytesExpectedToWrite)")
         }
         
-        var task: NSURLSessionDownloadTask = TSNWBackground.downloadFromFullFullURL("http://images.dailytech.com/nimage/gabe_newell.jpeg", destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        var task: NSURLSessionDownloadTask = TSNWBackground.downloadFromFullURL("http://images.dailytech.com/nimage/gabe_newell.jpeg", destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertNotNil(task, "The download task was nil")
         XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
+        waitForExpectationsWithTimeout(20, handler: nil)
+    }
+    
+    func testCancelDownload() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
+        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("1mb.mp4")
+        let fm = NSFileManager()
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTFail("The download should have failed because it was cancelled")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertEqual(error.code, NSURLErrorCancelled, "task was not cancelled, it was \(error.localizedDescription)")
+            var error: NSError?
+            fm.removeItemAtPath(destinationPath, error: &error)
+            testFinished.fulfill()
+        }
+        
+        let progressBlock: TSNWDownloadProgressBlock = { (bytesWritten, totalBytesWritten, totalBytesExpectedToWrite) -> Void in
+            NSLog("Download written: \(bytesWritten), TotalBytesWritten: \(totalBytesWritten), expectedToWrite: \(totalBytesExpectedToWrite)")
+        }
+        
+        var task: NSURLSessionDownloadTask = TSNWBackground.downloadFromFullURL("http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertNotNil(task, "The download task was nil")
+        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (Int64)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), {
+            task.cancel()
+        });
+        
         waitForExpectationsWithTimeout(10, handler: nil)
     }
+
 }
