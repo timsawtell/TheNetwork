@@ -27,6 +27,9 @@ class TSNetworkingSwiftTests: XCTestCase {
         super.tearDown()
     }
     
+    /*
+    * GET tests
+    */
     
     func testGet() {
         
@@ -44,7 +47,8 @@ class TSNetworkingSwiftTests: XCTestCase {
             testFinished.fulfill()
         }
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
-        TSNWForeground.performDataTaskWithRelativePath(testPath, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(testPath, method: .GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -68,7 +72,8 @@ class TSNetworkingSwiftTests: XCTestCase {
         var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
         TSNWForeground.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
-        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .GET, parameters: nil, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -89,7 +94,8 @@ class TSNetworkingSwiftTests: XCTestCase {
         }
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
-        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: additionalParams, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .GET, parameters: additionalParams, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -104,12 +110,77 @@ class TSNetworkingSwiftTests: XCTestCase {
         let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
             XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
             XCTFail("in the error block, error was: \(error.localizedDescription)")
-            NSLog("\n\n\n\(request?.URL)\n\(request?.allHTTPHeaderFields)\n\n\n")
             testFinished.fulfill()
         }
         TSNWForeground.setBaseURLString(kAuthNeeded)
         TSNWForeground.setBasicAuth("hack", pass: "thegibson")
-        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * POST tests
+    */
+    
+    func testPostWithPameters() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            var body = NSString(data: request.HTTPBody, encoding: NSUTF8StringEncoding)
+            XCTAssertNotNil(body, "body had no content for the POST")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
+        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, parameters: additionalParams, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String, "application/json", "the content type was not set")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * Download tests
+    */
+    
+    func testDownloadFile() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
+        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("ourLord.jpeg")
+
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            let fm = NSFileManager()
+            XCTAssertTrue(fm.fileExistsAtPath(destinationPath), "file doesnt exist at download path")
+            //better delete it
+            var error: NSError?
+            fm.removeItemAtPath(destinationPath, error: &error)
+            XCTAssertNil(error, "Error deleting file: \(error)")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        let progressBlock: TSNWDownloadProgressBlock = { (bytesWritten, totalBytesWritten, totalBytesExpectedToWrite) -> Void in
+            NSLog("Download written: \(bytesWritten), TotalBytesWritten: \(totalBytesWritten), expectedToWrite: \(totalBytesExpectedToWrite)")
+        }
+        
+        var task: NSURLSessionDownloadTask = TSNWBackground.downloadFromFullFullURL("http://images.dailytech.com/nimage/gabe_newell.jpeg", destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertNotNil(task, "The download task was nil")
+        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
+        waitForExpectationsWithTimeout(10, handler: nil)
     }
 }

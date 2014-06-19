@@ -55,8 +55,8 @@ let TSNWBackground = TSNetworking(background:true)
 class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, NSURLSessionDataDelegate {
     
     // to be marked private when Swift has access modifiers ...
+    var baseURL: NSURL = NSURL.URLWithString("")
     var defaultConfiguration: NSURLSessionConfiguration
-    var baseURL: NSURL
     var acceptableStatusCodes: NSIndexSet
     var downloadProgressBlocks: NSMutableDictionary = NSMutableDictionary()
     var downloadCompletionBlocks: NSMutableDictionary = NSMutableDictionary()
@@ -64,7 +64,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     var uploadCompletedBlocks: NSMutableDictionary = NSMutableDictionary()
     var sessionHeaders: NSMutableDictionary = NSMutableDictionary()
     var downloadsToResume: NSMutableDictionary = NSMutableDictionary()
-    var sharedURLSession: NSURLSession
+    var sharedURLSession: NSURLSession = NSURLSession()
     var username = String()
     var password = String()
     var isBackgroundConfiguration: Bool
@@ -72,24 +72,21 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     var sessionCompletionHandler: SessionCompletionHandler
     
     init(background: Bool) {
-        
         if background {
             defaultConfiguration = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier("au.com.sawtellsoftware.tsnetworking")
         } else {
             defaultConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()
         }
-        baseURL = NSURL.URLWithString("")
+        acceptableStatusCodes = NSIndexSet(indexesInRange: NSMakeRange(200, 100))
+        isBackgroundConfiguration = background
+        super.init()
         defaultConfiguration.allowsCellularAccess = true
         defaultConfiguration.timeoutIntervalForRequest = 30
         defaultConfiguration.timeoutIntervalForResource = 18000 // 5 hours to download a single resource should be enough. Right?
-        sharedURLSession = NSURLSession(configuration: defaultConfiguration)
-        acceptableStatusCodes = NSIndexSet(indexesInRange: NSMakeRange(200, 100))
-        isBackgroundConfiguration = background
-        
-        super.init()
+
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleNetworkChange", name: kReachabilityChangedNotification, object: nil)
+        sharedURLSession = NSURLSession(configuration: defaultConfiguration, delegate: self, delegateQueue: nil)
         Reachability.reachabilityForInternetConnection().startNotifier()
-        
     }
     
     deinit {
@@ -178,7 +175,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         var firstComponent = NSString(), secondComponent = NSString()
 
         if indexOfSlash > 0 && indexOfSlash < contentType.length - 1 {
-            NSLog("\(indexOfSlash)")
             firstComponent = contentType.substringToIndex(indexOfSlash).lowercaseString
             secondComponent = contentType.substringFromIndex(indexOfSlash + 1).lowercaseString
         } else {
@@ -192,7 +188,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             }
         } else if firstComponent == "text" {
             var parsedString = NSString(data: data, encoding: encoding)
-            NSLog("\(parsedString)")
             return parsedString
         }
         return data
@@ -294,7 +289,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
     }
     
-    func performDataTaskWithRelativePath(path: NSString?, method: HTTP_METHOD, parameters: NSDictionary?, additionalHeaders: NSDictionary?, successBlock: TSNWSuccessBlock?, errorBlock: TSNWErrorBlock?) {
+    func performDataTaskWithRelativePath(path: NSString?, method: HTTP_METHOD, parameters: NSDictionary?, additionalHeaders: NSDictionary?, successBlock: TSNWSuccessBlock?, errorBlock: TSNWErrorBlock?) ->NSURLSessionDataTask {
         assert(!isBackgroundConfiguration, "Must be run in foreground session, not background session")
         var requestURL = baseURL
         if nil != path {
@@ -307,8 +302,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             switch method {
             case HTTP_METHOD.POST, HTTP_METHOD.PUT, HTTP_METHOD.PATCH:
                 var error: NSError?
-                var jsonData = NSJSONSerialization.dataWithJSONObject(parameters, options: NSJSONWritingOptions.PrettyPrinted, error: &error)
-                if nil != jsonData {
+                if let jsonData = NSJSONSerialization.dataWithJSONObject(parameters, options: NSJSONWritingOptions.PrettyPrinted, error: &error) {
                     request.HTTPBody = jsonData
                 }
             default:
@@ -337,18 +331,18 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             sharedApp.networkActivityIndicatorVisible = true
         }
         activeTasks++
-        NSLog("\(request.URL)")
         task.resume()
+        return task
     }
     
-    func downloadFromFullFullURL(sourceURLString: NSString, destinationPathString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWDownloadProgressBlock, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionDownloadTask {
+    func downloadFromFullFullURL(sourceURLString: NSString, destinationPathString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWDownloadProgressBlock?, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionDownloadTask {
         
         var request = NSMutableURLRequest(URL: NSURL(string: sourceURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
-        request.HTTPMethod = HTTP_METHOD.POST.toRaw()
+        request.HTTPMethod = HTTP_METHOD.GET.toRaw()
         
         weak var weakSelf = self
         
-        var completionBlock: URLSessionDownloadTaskCompletion = { (location, error) -> Void in
+        var completionBlock: URLSessionDownloadTaskCompletion = { (location: NSURL!, error: NSError!) -> Void in
             if let strongSelf = weakSelf {
                 strongSelf.activeTasks = max(strongSelf.activeTasks - 1, 0)
                 if (TSNWForeground.activeTasks == 0 && TSNWBackground.activeTasks == 0) {
@@ -358,64 +352,63 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                 }
                 
                 if nil != error {
-                    if nil != errorBlock {
-                        errorBlock(resultObject: nil, error: error, request: request, response: nil)
-                    }
+                    errorBlock(resultObject: nil, error: error, request: request, response: nil)
                     return
                 }
                 
-                // does the downloaded file exist?
-                var fm = NSFileManager()
-                if !fm.fileExistsAtPath(location.path) {
-                    // aint this some shit, it finished without error, but the file is not available at location
-                    var text = NSLocalizedString("Unable to locate downloaded file", comment: "")
-                    let notFoundError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                    if nil != errorBlock {
+                if let tempLocation = location {
+                    
+                    NSLog("\n\n\(tempLocation.path)\n\n")
+                    
+                    // does the downloaded file exist?
+                    var fm = NSFileManager()
+                    if !fm.fileExistsAtPath(tempLocation.path) {
+                        // aint this some shit, it finished without error, but the file is not available at location
+                        var text = NSLocalizedString("Unable to locate downloaded file", comment: "")
+                        let notFoundError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                         errorBlock(resultObject: nil, error: notFoundError, request: request, response: nil)
+                        return
                     }
-                    return
-                }
-                
-                // delete an existing file at the programmers destination path string
-                var error: NSError?
-                if fm.fileExistsAtPath(destinationPathString) {
-                    fm.removeItemAtPath(destinationPathString, error: &error)
-                }
-                
-                if (nil != error) {
-                    // son of a bitch
-                    var text = NSLocalizedString("Download success, however destination path already exists, and that file was unable to be deleted", comment: "")
-                    let cantDeleteError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                    if nil != errorBlock {
+                    
+                    // delete an existing file at the programmers destination path string
+                    var fileBasedError: NSError?
+                    if fm.fileExistsAtPath(destinationPathString) {
+                        fm.removeItemAtPath(destinationPathString, error: &fileBasedError)
+                    }
+                    
+                    if (nil != fileBasedError) {
+                        // son of a bitch
+                        var text = NSLocalizedString("Download success, however destination path already exists, and that file was unable to be deleted", comment: "")
+                        let cantDeleteError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                         errorBlock(resultObject: nil, error: cantDeleteError, request: request, response: nil)
+                        return
                     }
-                    return
-                }
-                
-                // move the file to the programmers destination
-                fm.moveItemAtPath(location.path, toPath:destinationPathString, error:&error)
-                if (nil != error) {
-                    // double son of a bitch
-                    var text = NSLocalizedString("Download success, however unable to move downloaded file to the destination path.", comment: "")
-                    let cantMoveError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                    if nil != errorBlock {
+                    
+                    // move the file to the programmers destination
+                    fm.moveItemAtPath(tempLocation.path, toPath:destinationPathString, error:&fileBasedError)
+                    if (nil != fileBasedError) {
+                        // double son of a bitch
+                        var text = NSLocalizedString("Download success, however unable to move downloaded file to the destination path.", comment: "")
+                        let cantMoveError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                         errorBlock(resultObject: nil, error: cantMoveError, request: request, response: nil)
+                        return
                     }
-                    return
+                    // all worked as intended
+                    var finalLocation = NSURL(fileURLWithPath: destinationPathString)
+                    successBlock(resultObject: finalLocation, request: request, response: nil)
                 }
                 
-                // all worked as intended
-                if nil != successBlock {
-                    successBlock(resultObject: location, request: request, response: nil)
-                }
+                var text = NSLocalizedString("Unable to locate downloaded file.", comment: "")
+                let cantFindError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                errorBlock(resultObject: nil, error: cantFindError, request: request, response: nil)
             }
         }
         
         addHeaders(additionalHeaders, request: request)
         var downloadTask = sharedURLSession.downloadTaskWithRequest(request)
-        if nil != progressBlock {
+        if let actualProgressBlock = progressBlock {
             var holder = BlockHolder()
-            holder.downloadProgressBlock = progressBlock
+            holder.downloadProgressBlock = actualProgressBlock
             downloadProgressBlocks.setObject(holder, forKey: downloadTask.taskIdentifier)
         }
         var holder = BlockHolder()
@@ -476,16 +469,15 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         var completionBlock = taskCompletionBlockForRequest(request, successBlock: successBlock, errorBlock: errorBlock)
         addHeaders(additionalHeaders, request: request)
         var uploadTask = sharedURLSession.uploadTaskWithRequest(request, fromData: data)
-        if nil != progressBlock {
-            var holder = BlockHolder()
-            holder.uploadProgressBlock = progressBlock
-            uploadProgressBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
-        }
-        if nil != completionBlock {
-            var holder = BlockHolder()
-            holder.uploadCompletedBlock = completionBlock
-            uploadCompletedBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
-        }
+        
+        var holder = BlockHolder()
+        holder.uploadProgressBlock = progressBlock
+        uploadProgressBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
+
+        holder = BlockHolder()
+        holder.uploadCompletedBlock = completionBlock
+        uploadCompletedBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
+        
         if let sharedApp = UIApplication.sharedApplication() {
             sharedApp.networkActivityIndicatorVisible = true
         }
@@ -528,7 +520,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     func URLSession(session: NSURLSession!, task: NSURLSessionTask!, didCompleteWithError error: NSError!) {
         // if it finishes with error, but has downloaded data, and we have network access: resume the download.
         // if it finishes with error, but has downloaded data, and we do not have network access: save the task (and data) to retry later
-        if nil != error {
+        if let realError = error {
             if let downloadedData = error.userInfo.objectForKey(NSURLSessionDownloadTaskResumeData) as? NSData {
                 if (NetworkStatus.NotReachable != Reachability.reachabilityForInternetConnection().currentReachabilityStatus()) {
                     sharedURLSession.downloadTaskWithResumeData(downloadedData)
@@ -537,25 +529,26 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                 }
                 return
             }
-             // it didn't fail, so remove the paused download task if it existed in the downloadsToResume dict.
-            downloadsToResume.removeObjectForKey(task.taskIdentifier)
-            
-            // at this stage we could be finishing from a download task or an upload task (this delegate is called for both)
-            if let blockHolder: BlockHolder = uploadCompletedBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
-                if let uploadCompletionBlock = blockHolder.uploadCompletedBlock {
-                    uploadCompletionBlock(data: nil, response: task.response, error: error)
-                }
-                uploadCompletedBlocks.removeObjectForKey(task.taskIdentifier) // remove the block holder as its served its purpose
-                uploadProgressBlocks.removeObjectForKey(task.taskIdentifier) // no need to hold on to the progress block for a completed task
-            }
-            if let blockHolder: BlockHolder = downloadCompletionBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
-                if let downloadCompletionBlock = blockHolder.downloadCompletionBlock {
-                    downloadCompletionBlock(location: nil, error: error)
-                }
-                downloadCompletionBlocks.removeObjectForKey(task.taskIdentifier) // remove the block holder as its served its purpose
-                downloadProgressBlocks.removeObjectForKey(task.taskIdentifier) // no need to hold on to the progress block for a completed task
-            }
         }
+         // it didn't fail, so remove the paused download task if it existed in the downloadsToResume dict.
+        downloadsToResume.removeObjectForKey(task.taskIdentifier)
+        
+        // at this stage we could be finishing from a download task or an upload task (this delegate is called for both)
+        if let blockHolder: BlockHolder = uploadCompletedBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
+            if let uploadCompletionBlock = blockHolder.uploadCompletedBlock {
+                uploadCompletionBlock(data: nil, response: task.response, error: nil)
+            }
+            uploadCompletedBlocks.removeObjectForKey(task.taskIdentifier) // remove the block holder as its served its purpose
+            uploadProgressBlocks.removeObjectForKey(task.taskIdentifier) // no need to hold on to the progress block for a completed task
+        }
+        if let blockHolder: BlockHolder = downloadCompletionBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
+            if let downloadCompletionBlock = blockHolder.downloadCompletionBlock {
+                downloadCompletionBlock(location: nil, error: nil)
+            }
+            downloadCompletionBlocks.removeObjectForKey(task.taskIdentifier) // remove the block holder as its served its purpose
+            downloadProgressBlocks.removeObjectForKey(task.taskIdentifier) // no need to hold on to the progress block for a completed task
+        }
+        
     }
     
     func URLSession(session: NSURLSession!, downloadTask: NSURLSessionDownloadTask!, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
