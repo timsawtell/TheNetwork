@@ -32,12 +32,17 @@ class TSNetworkingSwiftTests: XCTestCase {
     * GET tests
     */
 
+    /*
+    * As a GET REQUEST I should has a HTTPMethod of "GET"
+    * If I add a path it should be appended to the base URL 
+    * The resultObject should be what TSNetworkingSwiftTests/noauth.node.js returns
+    */
     func testGet() {
         
         var testFinished = expectationWithDescription("test finished")
         let testPath = "something"
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
-            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             XCTAssertTrue(request.URL.lastPathComponent == testPath, "path wasn't appended")
             testFinished.fulfill()
         }
@@ -53,13 +58,18 @@ class TSNetworkingSwiftTests: XCTestCase {
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
+    /*
+    * As a GET REQUEST with additional headers I should have a HTTPMethod of "GET"
+    * I should have those headers in the request's header fields
+    * The resultObject should be what TSNetworkingSwiftTests/noauth.node.js returns
+    */
     func testGetAdditionalHeaders() {
         
         var testFinished = expectationWithDescription("test finished")
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var requestHeaders = request.allHTTPHeaderFields
-            XCTAssertTrue(requestHeaders.valueForKey("Accept").isEqualToString("application/json"), "Accept header missing")
             XCTAssertTrue(requestHeaders.valueForKey("Content-Type").isEqualToString("application/json"), "Content-Type header missing")
             testFinished.fulfill()
         }
@@ -72,17 +82,52 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
-        TSNWForeground.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
         var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .GET, parameters: nil, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
+    /*
+    * As a GET REQUEST with session headers I should have a HTTPMethod of "GET"
+    * I should have those headers in the requests header fields
+    * The resultObject should be what TSNetworkingSwiftTests/noauth.node.js returns
+    */
+    func testAddSessionHeaders() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            var requestHeaders = request.allHTTPHeaderFields
+            XCTAssertTrue(requestHeaders.valueForKey("Accept").isEqualToString("application/json"), "Accept header missing")
+            TSNWForeground.removeAllSessionHeaders()
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * As a GET REQUEST with parameters headers I should have a HTTPMethod of "GET"
+    * The request's URL must include these parameters
+    * The resultObject should be what TSNetworkingSwiftTests/noauth.node.js returns
+    */
     func testGetWithParameters() {
         
         var testFinished = expectationWithDescription("test finished")
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var shouldBeURL = "\(kNoAuthNeeded)?key=value"
             XCTAssertEqual(request.URL.absoluteString, shouldBeURL, "the query string wasn't set correctly, it was \(request.URL.absoluteString)")
             testFinished.fulfill()
@@ -100,6 +145,10 @@ class TSNetworkingSwiftTests: XCTestCase {
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
+    /*
+    * As a GET REQUEST with BASIC AUTH set I should have a HTTPMethod of "GET"
+    * The request should reach the successblock
+    */
     func testGetWithUsernameAndPassword() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -119,7 +168,34 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
-
+    
+    /*
+    * As a GET REQUEST with BASIC AUTH set I should have a HTTPMethod of "GET"
+    * The request should reach the errorBlock with a 401 response
+    */
+    func testGetWithWrongUsernameAndPassword() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTFail("in the success block, the request should have a 401 response but doesn't")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertEqual(error.code, 401, "The error case was \(error.code) instead of 401")
+            testFinished.fulfill()
+        }
+        TSNWForeground.setBaseURLString(kAuthNeeded)
+        TSNWForeground.setBasicAuth("hack", pass: "thegibsonWRONG")
+        var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .GET, parameters: nil, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    *
+    *
+    */
     func testGetJSON() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -144,11 +220,16 @@ class TSNetworkingSwiftTests: XCTestCase {
     * POST tests
     */
     
+    /*
+    *
+    *
+    */
     func testPostWithPameters() {
         
         var testFinished = expectationWithDescription("test finished")
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var body = NSString(data: request.HTTPBody, encoding: NSUTF8StringEncoding)
             XCTAssertNotNil(body, "body had no content for the POST")
             testFinished.fulfill()
@@ -172,6 +253,10 @@ class TSNetworkingSwiftTests: XCTestCase {
     * Download tests
     */
     
+    /*
+    *
+    *
+    */
     func testDownloadFile() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -205,6 +290,10 @@ class TSNetworkingSwiftTests: XCTestCase {
         waitForExpectationsWithTimeout(20, handler: nil)
     }
     
+    /*
+    *
+    *
+    */
     func testCancelDownload() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -238,7 +327,11 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
-
+    
+    /*
+    *
+    *
+    */
     func testAddDownloadProgressBlock() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -277,11 +370,14 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
-    
     /*
     * upload tests
     */
     
+    /*
+    *
+    *
+    */
     func testUploadInForeground() {
         
         var testFinished = expectationWithDescription("test finished")
@@ -307,6 +403,196 @@ class TSNetworkingSwiftTests: XCTestCase {
         let data = fm.contentsAtPath(sourcePath)
         
         let uploadTask = TSNWForeground.uploadInForeground(data, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        
+        waitForExpectationsWithTimeout(10, handler: nil)
+    }
+    
+    /*
+    *
+    *
+    */
+    func testUploadInBackground() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        let progressBlock: TSNWUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
+            NSLog("bytes sent: \(bytesSent), TotalBytesSent: \(totalBytesSent), expectedToSend: \(totalBytesExpectedToSend)")
+        }
+        
+        let fm = NSFileManager()
+        let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
+        XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
+        let data = fm.contentsAtPath(sourcePath)
+        
+        let uploadTask = TSNWForeground.uploadInBackground(sourcePath, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        
+        waitForExpectationsWithTimeout(10, handler: nil)
+    }
+    
+    /*
+    *
+    *
+    */
+    func testCancelUploadInForeground() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
+        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("1mb.mp4")
+        let fm = NSFileManager()
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTFail("The download should have failed because it was cancelled")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertEqual(error.code, NSURLErrorCancelled, "task was not cancelled, it was \(error.localizedDescription)")
+            var error: NSError?
+            fm.removeItemAtPath(destinationPath, error: &error)
+            testFinished.fulfill()
+        }
+        
+        let progressBlock: TSNWUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
+            NSLog("bytes sent: \(bytesSent), TotalBytesSent: \(totalBytesSent), expectedToSend: \(totalBytesExpectedToSend)")
+        }
+        
+        let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
+        XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
+        let data = fm.contentsAtPath(sourcePath)
+        
+        let uploadTask = TSNWForeground.uploadInForeground(data, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        
+        uploadTask.cancel()
+        
+        waitForExpectationsWithTimeout(10, handler: nil)
+    }
+    
+    /*
+    *
+    *
+    */
+    func testCancelUploadInBackground() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
+        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("1mb.mp4")
+        let fm = NSFileManager()
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTFail("The download should have failed because it was cancelled")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertEqual(error.code, NSURLErrorCancelled, "task was not cancelled, it was \(error.localizedDescription)")
+            var error: NSError?
+            fm.removeItemAtPath(destinationPath, error: &error)
+            testFinished.fulfill()
+        }
+        
+        let progressBlock: TSNWUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
+            NSLog("bytes sent: \(bytesSent), TotalBytesSent: \(totalBytesSent), expectedToSend: \(totalBytesExpectedToSend)")
+        }
+        
+        let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
+        XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
+        let data = fm.contentsAtPath(sourcePath)
+        
+        if let uploadTask = TSNWForeground.uploadInBackground(sourcePath, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock) {
+            uploadTask.cancel()
+        }
+        
+        waitForExpectationsWithTimeout(10, handler: nil)
+    }
+    
+    /*
+    *
+    *
+    */
+    func testAddUploadInBackgroundProgressBlock() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        var progressReached = expectationWithDescription("progress block was called")
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        var fulfilled = false
+        let progressBlock: TSNWUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
+            NSLog("bytes sent: \(bytesSent), TotalBytesSent: \(totalBytesSent), expectedToSend: \(totalBytesExpectedToSend)")
+            if !fulfilled {
+                progressReached.fulfill() // API violation to call this more than once apparently
+                fulfilled = true
+            }
+        }
+        
+        let fm = NSFileManager()
+        let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
+        XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
+        let data = fm.contentsAtPath(sourcePath)
+        
+        if let uploadTask = TSNWForeground.uploadInBackground(sourcePath, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock) {
+            TSNWForeground.addUploadProgressBlock(progressBlock, task: uploadTask)
+        }
+        
+        waitForExpectationsWithTimeout(10, handler: nil)
+    }
+    
+    /*
+    *
+    *
+    */
+    func testAddUploadInForegroundProgressBlock() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        var progressReached = expectationWithDescription("progress block was called")
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        var fulfilled = false
+        let progressBlock: TSNWUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
+            NSLog("bytes sent: \(bytesSent), TotalBytesSent: \(totalBytesSent), expectedToSend: \(totalBytesExpectedToSend)")
+            if !fulfilled {
+                progressReached.fulfill() // API violation to call this more than once apparently
+                fulfilled = true
+            }
+        }
+        
+        let fm = NSFileManager()
+        let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
+        XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
+        let data = fm.contentsAtPath(sourcePath)
+        
+        let uploadTask = TSNWForeground.uploadInForeground(data, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        TSNWBackground.addUploadProgressBlock(progressBlock, task: uploadTask)
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }

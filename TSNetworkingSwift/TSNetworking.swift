@@ -143,8 +143,10 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                 var useableContentType: String
                 var encoding: NSStringEncoding = NSUTF8StringEncoding
                 var parsedObject: AnyObject? = data
+                // is the response an NSHTTPURLResponse?
+                // does that response have a content type? 
+                // if no to either of these a default value is used to try and parse the response into a usable AnyObject
                 if let httpResponse = response as? NSHTTPURLResponse {
-                    
                     if let encodingName = httpResponse.textEncodingName  {
                         var tmpEncoding = CFStringConvertIANACharSetNameToEncoding(encodingName.bridgeToObjectiveC() as CFString)
                         if tmpEncoding != kCFStringEncodingInvalidId {
@@ -162,6 +164,8 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                     } else {
                         parsedObject = strongSelf.resultBasedOnContentType("text", encoding: encoding, data: data)
                     }
+                } else {
+                    parsedObject = strongSelf.resultBasedOnContentType("text", encoding: encoding, data: data)
                 }
                 successBlock(resultObject: parsedObject, request: request, response: response)
             }
@@ -188,6 +192,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             }
         } else if firstComponent == "text" {
             var parsedString = NSString(data: data, encoding: encoding)
+            NSLog("data: \(data)")
             return parsedString
         }
         return data!
@@ -460,7 +465,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return uploadTask
     }
     
-    func uploadInForeground(data: NSData, destinationFullURLString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWUploadProgressBlock, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionUploadTask? {
+    func uploadInForeground(data: NSData, destinationFullURLString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWUploadProgressBlock, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionUploadTask {
         
         assert(!isBackgroundConfiguration, "Must be run with TSNWForeground, not TSNWBackground")
         
