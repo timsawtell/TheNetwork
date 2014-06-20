@@ -193,8 +193,8 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    *
-    *
+    * As a GET REQUEST with hitting a JSON based API I should have a HTTPMethod of "GET"
+    * I should receive a dictionary as the response which contains the parsed JSON from the server
     */
     func testGetJSON() {
         
@@ -221,8 +221,9 @@ class TSNetworkingSwiftTests: XCTestCase {
     */
     
     /*
-    *
-    *
+    * As a POST request I should have a HTTPMethod of "POST"
+    * I should have a request body that contains the additionalParameters added to the task
+    * I should have the additionalHeaders that were added to the task
     */
     func testPostWithPameters() {
         
@@ -232,6 +233,8 @@ class TSNetworkingSwiftTests: XCTestCase {
             XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var body = NSString(data: request.HTTPBody, encoding: NSUTF8StringEncoding)
             XCTAssertNotNil(body, "body had no content for the POST")
+            var requestHeaders = request.allHTTPHeaderFields
+            XCTAssertTrue(requestHeaders.valueForKey("Content-Type").isEqualToString("application/json"), "Content-Type header missing")
             testFinished.fulfill()
         }
         
@@ -244,7 +247,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
         var task: NSURLSessionDataTask = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, parameters: additionalParams, additionalHeaders: additionalHeaders, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
         XCTAssertEqual(task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String, "application/json", "the content type was not set")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
