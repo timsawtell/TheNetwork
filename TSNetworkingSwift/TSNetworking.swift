@@ -131,55 +131,55 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                         sharedApp.networkActivityIndicatorVisible = false
                     }
                 }
-                var useableContentType = "text" //reassign this value if appropriate
+                
+                if let responseError = error {
+                    errorBlock(resultObject: nil, error: responseError, request: request, response: response)
+                    return
+                } else if let anError = strongSelf.validateResponse(response) {
+                    errorBlock(resultObject: nil, error: anError, request: request, response: response)
+                    return
+                }
+                
+                var useableContentType: String
                 var encoding: NSStringEncoding = NSUTF8StringEncoding
+                var parsedObject: AnyObject? = data
                 if let httpResponse = response as? NSHTTPURLResponse {
-                    var responseHeaders = httpResponse.allHeaderFields
-                    if let contentType: NSString = responseHeaders.valueForKey("Content-Type") as? NSString {
-                        var useableContentType: NSString = contentType.lowercaseString
-                        
-                        if let locOfSemi = Int?(useableContentType.rangeOfString(";").location) {
-                            useableContentType = useableContentType.substringToIndex(locOfSemi)
-                        }
-                    }
+                    
                     if let encodingName = httpResponse.textEncodingName  {
                         var tmpEncoding = CFStringConvertIANACharSetNameToEncoding(encodingName.bridgeToObjectiveC() as CFString)
                         if tmpEncoding != kCFStringEncodingInvalidId {
                             encoding = CFStringConvertEncodingToNSStringEncoding(tmpEncoding)
                         }
                     }
-                }
-                var parsedObject: AnyObject? = nil
-                
-                if let actualError = error {
-                    if let actualData = data {
-                        if actualData.length <= 0 {
-                            parsedObject = actualError
+                    var responseHeaders = httpResponse.allHeaderFields
+                    if let contentType: NSString = responseHeaders.valueForKey("Content-Type") as? NSString {
+                        var useableContentType: NSString = contentType.lowercaseString
+                        var range = useableContentType.rangeOfString(";")
+                        if range.location != NSNotFound {
+                            useableContentType = useableContentType.substringToIndex(range.location)
                         }
+                        parsedObject = strongSelf.resultBasedOnContentType(useableContentType, encoding: encoding, data: data)
+                    } else {
+                        parsedObject = strongSelf.resultBasedOnContentType("text", encoding: encoding, data: data)
                     }
-                } else {
-                    parsedObject = strongSelf.resultBasedOnContentType(useableContentType, encoding: encoding, data: data)
                 }
-                if let anError = strongSelf.validateResponse(response) {
-                    errorBlock(resultObject: parsedObject, error: anError, request: request, response: response)
-                } else {
-                    successBlock(resultObject: parsedObject, request: request, response: response)
-                }
+                successBlock(resultObject: parsedObject, request: request, response: response)
             }
         }
         return completionBlock
     }
     
-    func resultBasedOnContentType(contentType: NSString, encoding: NSStringEncoding, data: NSData) -> AnyObject {
-        var indexOfSlash: Int = contentType.rangeOfString("/").location
+    func resultBasedOnContentType(contentType: NSString, encoding: NSStringEncoding, data: NSData?) -> AnyObject {
+       
         var firstComponent = NSString(), secondComponent = NSString()
-
+        var indexOfSlash: Int = contentType.rangeOfString("/").location
         if indexOfSlash > 0 && indexOfSlash < contentType.length - 1 {
             firstComponent = contentType.substringToIndex(indexOfSlash).lowercaseString
             secondComponent = contentType.substringFromIndex(indexOfSlash + 1).lowercaseString
         } else {
             firstComponent = contentType.lowercaseString
         }
+        
         var parseError: NSError?
         if firstComponent == "application" {
             if secondComponent.containsString("json") {
@@ -190,7 +190,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             var parsedString = NSString(data: data, encoding: encoding)
             return parsedString
         }
-        return data
+        return data!
     }
     
     func validateResponse(response: NSURLResponse?) -> NSError? {
@@ -206,7 +206,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             let error = NSError.errorWithDomain(NSURLErrorDomain, code: 500, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
             return error
         }
-        
         
         return nil
     }
@@ -246,12 +245,15 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     }
     
     func addDownloadProgressBlock(progressBlock: TSNWDownloadProgressBlock, task: NSURLSessionTask) {
-        if NSURLSessionTaskState.Running == task.state {
+        switch task.state {
+        case .Running, .Suspended:
             if nil != progressBlock {
                 var holder = BlockHolder()
                 holder.downloadProgressBlock = progressBlock
                 downloadProgressBlocks.setObject(holder, forKey: task.taskIdentifier)
             }
+        default:
+            break
         }
     }
     
@@ -292,8 +294,8 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     func performDataTaskWithRelativePath(path: NSString?, method: HTTP_METHOD, parameters: NSDictionary?, additionalHeaders: NSDictionary?, successBlock: TSNWSuccessBlock?, errorBlock: TSNWErrorBlock?) ->NSURLSessionDataTask {
         assert(!isBackgroundConfiguration, "Must be run in foreground session, not background session")
         var requestURL = baseURL
-        if nil != path {
-            requestURL = requestURL.URLByAppendingPathComponent(path)
+        if let suppliedPath = path {
+            requestURL = requestURL.URLByAppendingPathComponent(suppliedPath)
         }
         var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
         request.HTTPMethod = method.toRaw()
@@ -357,9 +359,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                 }
                 
                 if let tempLocation = location {
-                    
-                    NSLog("\n\n\(tempLocation.path)\n\n")
-                    
                     var fm = NSFileManager()
                     // does the downloaded file exist?
                     
