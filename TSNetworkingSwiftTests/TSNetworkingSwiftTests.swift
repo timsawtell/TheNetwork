@@ -257,8 +257,10 @@ class TSNetworkingSwiftTests: XCTestCase {
     */
     
     /*
-    *
-    *
+    * As a download task I should have a state of "Running" after I am created
+    * I should have a resultObject that is an NSURL
+    * The NSURL should exist on disk
+    * The NSURL should be able to be deleted
     */
     func testDownloadFile() {
         
@@ -268,6 +270,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         NSLog("destination path: \(destinationPath)")
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertTrue(resultObject?.isKindOfClass(NSURL.self), "download resultObject was not an NSURL")
             let fm = NSFileManager()
             XCTAssertTrue(fm.fileExistsAtPath(destinationPath), "file doesnt exist at download path")
             //better delete it
