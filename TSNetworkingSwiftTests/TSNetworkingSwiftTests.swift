@@ -259,8 +259,8 @@ class TSNetworkingSwiftTests: XCTestCase {
     /*
     * As a download task I should have a state of "Running" after I am created
     * I should have a resultObject that is an NSURL
-    * The NSURL should exist on disk
-    * The NSURL should be able to be deleted
+    * The file at NSURL should exist on disk
+    * The file at NSURL should be able to be deleted
     */
     func testDownloadFile() {
         
@@ -297,8 +297,9 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    *
-    *
+    * As a download task that will be cancelled should have a state of "Running" after I am created
+    * I should not reach the successBlock
+    * I should reach the errorBlock, and the error's code should tell me that the task was cancelled by user
     */
     func testCancelDownload() {
         
@@ -335,8 +336,7 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    *
-    *
+    * As a download task that will have a progress block added to me after I am running I should see that the progress block is executed
     */
     func testAddDownloadProgressBlock() {
         
@@ -357,9 +357,8 @@ class TSNetworkingSwiftTests: XCTestCase {
         }
         
         let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
-            XCTAssertEqual(error.code, NSURLErrorCancelled, "task was not cancelled, it was \(error.localizedDescription)")
-            var error: NSError?
-            fm.removeItemAtPath(destinationPath, error: &error)
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
             testFinished.fulfill()
         }
         var fulfilled = false
@@ -372,6 +371,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         }
         
         var task: NSURLSessionDownloadTask = TSNWBackground.downloadFromFullURL(remoteGabe, destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: nil, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
         TSNWBackground.addDownloadProgressBlock(progressBlock, task: task)
         
         waitForExpectationsWithTimeout(10, handler: nil)
@@ -381,8 +381,8 @@ class TSNetworkingSwiftTests: XCTestCase {
     */
     
     /*
-    *
-    *
+    * As an upload in foreground task I should have a state of "Running" after I am created
+    * I should be able to upload NSData
     */
     func testUploadInForeground() {
         
@@ -408,14 +408,17 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
         let data = fm.contentsAtPath(sourcePath)
         
-        let uploadTask = TSNWForeground.uploadInForeground(data, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWForeground.uploadInForeground(data, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
     
     /*
-    *
-    *
+    * As an upload in background task I should have a state of "Running" after I am created
+    * I should be able to upload from a string based source location.
+    * I should have a state of "Running" after I am created
+    * Unfortunately I cant find a way to simulate minimizing or exiting the app and having the download task finish as expected
     */
     func testUploadInBackground() {
         
@@ -441,14 +444,20 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
         let data = fm.contentsAtPath(sourcePath)
         
-        let uploadTask = TSNWForeground.uploadInBackground(sourcePath, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        if let task = TSNWForeground.uploadInBackground(sourcePath, destinationFullURLString: kMultipartUpload, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock) {
+            XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
+        } else {
+            XCTFail("error creating task, perhaps the source path was invalid")
+        }
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
     
     /*
-    *
-    *
+    * As an upload in foreground task that will be cancelled should have a state of "Running" after I am created
+    * I should be able to upload NSData
+    * I should not reach the successBlock
+    * I should reach the errorBlock, and the error's code should tell me that the task was cancelled by user
     */
     func testCancelUploadInForeground() {
         
@@ -485,8 +494,10 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    *
-    *
+    * As an upload in background task that will be cancelled should have a state of "Running" after I am created
+    * I should be able to upload from a string based location
+    * I should not reach the successBlock
+    * I should reach the errorBlock, and the error's code should tell me that the task was cancelled by user
     */
     func testCancelUploadInBackground() {
         
@@ -523,8 +534,7 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    *
-    *
+    * As an upload in background task that will have a progress block added to me after I am running I should see that the progress block is executed
     */
     func testAddUploadInBackgroundProgressBlock() {
         
@@ -564,8 +574,7 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    *
-    *
+    * As an upload in foreground task that will have a progress block added to me after I am running I should see that the progress block is executed
     */
     func testAddUploadInForegroundProgressBlock() {
         
