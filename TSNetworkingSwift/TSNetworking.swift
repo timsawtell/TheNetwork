@@ -95,6 +95,14 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
+    func setSecurityPolicyPinningMode(mode: AFSSLPinningMode) {
+        if mode == AFSSLPinningMode.None {
+            securityPolicy = AFSecurityPolicy.defaultPolicy()
+        } else {
+            securityPolicy = AFSecurityPolicy(pinningMode: mode)
+        }
+    }
+    
     func handleNetworkChange(object: AnyObject?) {
         if let notification = object as? NSNotification {
             if let reachability = notification.object as? Reachability {
