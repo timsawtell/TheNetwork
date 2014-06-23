@@ -8,11 +8,6 @@
 
 import UIKit
 
-let kNoAuthNeeded = "http://localhost:8081";
-let kAuthNeeded = "http://localhost:8080";
-let kJSON = "http://localhost:8083";
-let kMultipartUpload = "http://localhost:8082/upload";
-
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
                             
@@ -20,21 +15,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: NSDictionary?) -> Bool {
-        /*
-        let successBlock: TSNWSuccessBlock = { (resultObject: AnyObject?, request: NSURLRequest, response: NSURLResponse?) -> Void in
-            var shouldBeURL = "\(kNoAuthNeeded)?key=value"
-            NSLog("the query string wasn't set correctly, it was \(request.URL.absoluteString)")
-        }
-        
-        let errorBlock: TSNWErrorBlock = { (resultObject: AnyObject?, error: NSError, request: NSURLRequest?, response: NSURLResponse?) -> Void in
-            NSLog("error not nil, it was \(error.localizedDescription)")
-            NSLog("in the error block, error was: \(error.localizedDescription)")
-        }
-        var additionalParams = NSDictionary(object: "value", forKey: "key")
-        TSNWForeground.setBaseURLString(kAuthNeeded)
-        TSNWForeground.setBasicAuth("hack", pass: "thegibson")
-        TSNWForeground.performDataTaskWithRelativePath(nil, method: HTTP_METHOD.GET, parameters: additionalParams, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
-        */
         return true
     }
     
