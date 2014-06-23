@@ -70,6 +70,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     var isBackgroundConfiguration: Bool
     var activeTasks = 0
     var sessionCompletionHandler: SessionCompletionHandler
+    var securityPolicy: AFSecurityPolicy
     
     init(background: Bool) {
         if background {
@@ -79,6 +80,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
         acceptableStatusCodes = NSIndexSet(indexesInRange: NSMakeRange(200, 100))
         isBackgroundConfiguration = background
+        securityPolicy = AFSecurityPolicy.defaultPolicy()
         super.init()
         defaultConfiguration.allowsCellularAccess = true
         defaultConfiguration.timeoutIntervalForRequest = 30
@@ -500,7 +502,22 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     // NSURLSessionDelegate
     func URLSession(session: NSURLSession!, didReceiveChallenge challenge: NSURLAuthenticationChallenge!, completionHandler: ((NSURLSessionAuthChallengeDisposition, NSURLCredential!) -> Void)!) {
+        var disposition = NSURLSessionAuthChallengeDisposition.PerformDefaultHandling
+        var credential: NSURLCredential? = nil
         
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            if self.securityPolicy.evaluateServerTrust(challenge.protectionSpace.serverTrust, forDomain: challenge.protectionSpace.host) {
+                disposition = .UseCredential
+                credential = NSURLCredential(forTrust: challenge.protectionSpace.serverTrust)
+            } else {
+                disposition = .CancelAuthenticationChallenge
+            }
+        } else {
+            disposition = .CancelAuthenticationChallenge
+        }
+        if let handler = completionHandler {
+            handler(disposition, credential)
+        }
     }
     
     func URLSessionDidFinishEventsForBackgroundURLSession(session: NSURLSession!) {
