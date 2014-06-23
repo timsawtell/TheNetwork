@@ -58,13 +58,13 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     var baseURL: NSURL = NSURL.URLWithString("")
     var defaultConfiguration: NSURLSessionConfiguration
     var acceptableStatusCodes: NSIndexSet
-    var downloadProgressBlocks: NSMutableDictionary = NSMutableDictionary()
-    var downloadCompletionBlocks: NSMutableDictionary = NSMutableDictionary()
-    var uploadProgressBlocks: NSMutableDictionary = NSMutableDictionary()
-    var uploadCompletedBlocks: NSMutableDictionary = NSMutableDictionary()
-    var sessionHeaders: NSMutableDictionary = NSMutableDictionary()
-    var downloadsToResume: NSMutableDictionary = NSMutableDictionary()
-    var sharedURLSession: NSURLSession = NSURLSession()
+    var downloadProgressBlocks = NSMutableDictionary()
+    var downloadCompletionBlocks = NSMutableDictionary()
+    var uploadProgressBlocks = NSMutableDictionary()
+    var uploadCompletedBlocks = NSMutableDictionary()
+    var sessionHeaders = NSMutableDictionary()
+    var downloadsToResume = NSMutableDictionary()
+    var sharedURLSession = NSURLSession()
     var username = String()
     var password = String()
     var isBackgroundConfiguration: Bool
@@ -84,7 +84,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         defaultConfiguration.timeoutIntervalForRequest = 30
         defaultConfiguration.timeoutIntervalForResource = 18000 // 5 hours to download a single resource should be enough. Right?
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleNetworkChange", name: kReachabilityChangedNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleNetworkChange:", name: kReachabilityChangedNotification, object: nil)
         sharedURLSession = NSURLSession(configuration: defaultConfiguration, delegate: self, delegateQueue: nil)
         Reachability.reachabilityForInternetConnection().startNotifier()
     }
@@ -93,10 +93,14 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
-    func handleNetworkChange(notification: NSNotification) {
-        if let reachability = notification.object as? Reachability {
-            if NetworkStatus.NotReachable != reachability.currentReachabilityStatus() {
-                resumePausedDownloads()
+    func handleNetworkChange(object: AnyObject?) {
+        if let notification = object as? NSNotification {
+            if let reachability = notification.object as? Reachability {
+                if NetworkStatus.NotReachable != reachability.currentReachabilityStatus() {
+                    objc_sync_enter(self)
+                    resumePausedDownloads()
+                    objc_sync_exit(self)
+                }
             }
         }
     }
@@ -156,9 +160,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                     var responseHeaders = httpResponse.allHeaderFields
                     if let contentType: NSString = responseHeaders.valueForKey("Content-Type") as? NSString {
                         var useableContentType: NSString = contentType.lowercaseString
-                        var range = useableContentType.rangeOfString(";")
-                        if range.location != NSNotFound {
-                            useableContentType = useableContentType.substringToIndex(range.location)
+                        var location = useableContentType.rangeOfString(";").location
+                        if location > 0 && location < useableContentType.length - 1 {
+                            useableContentType = useableContentType.substringToIndex(location)
                         }
                         parsedObject = strongSelf.resultBasedOnContentType(useableContentType, encoding: encoding, data: data)
                     } else {
@@ -342,8 +346,11 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return task
     }
     
-    func downloadFromFullURL(sourceURLString: NSString, destinationPathString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWDownloadProgressBlock?, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionDownloadTask {
-        
+    func downloadFromFullURL(sourceURLString: NSString, destinationPathString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWDownloadProgressBlock?, successBlock:
+        TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionDownloadTask {
+            
+        assert(isBackgroundConfiguration, "Must be run with TSNWBackground, not TSNWForeground")
+            
         var request = NSMutableURLRequest(URL: NSURL(string: sourceURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
         request.HTTPMethod = HTTP_METHOD.GET.toRaw()
         
@@ -553,7 +560,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             downloadCompletionBlocks.removeObjectForKey(task.taskIdentifier) // remove the block holder as its served its purpose
             downloadProgressBlocks.removeObjectForKey(task.taskIdentifier) // no need to hold on to the progress block for a completed task
         }
-        
     }
     
     func URLSession(session: NSURLSession!, downloadTask: NSURLSessionDownloadTask!, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {

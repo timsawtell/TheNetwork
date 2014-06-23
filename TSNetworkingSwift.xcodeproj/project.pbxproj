@@ -13,6 +13,9 @@
 		2B599B0E1947B92900A40C65 /* TSNetworkingSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */; };
 		2B599B1A1947B96D00A40C65 /* TSNetworking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B191947B96D00A40C65 /* TSNetworking.swift */; };
 		2B599B241947BD1E00A40C65 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B599B231947BD1E00A40C65 /* Security.framework */; };
+		2BB592E31957A13400615074 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2BB592E21957A13400615074 /* Storyboard.storyboard */; };
+		2BB592E51957A16A00615074 /* DemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB592E41957A16A00615074 /* DemoViewController.swift */; };
+		2BB592E71957A1F600615074 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BB592E61957A1F600615074 /* UIKit.framework */; };
 		2BBC46121949380A00BF8F8A /* TSNetworking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B191947B96D00A40C65 /* TSNetworking.swift */; };
 		2BBC46131949381100BF8F8A /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BEFC4821949296C00283325 /* Reachability.m */; };
 		2BEFC4831949296C00283325 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BEFC4821949296C00283325 /* Reachability.m */; };
@@ -104,6 +107,9 @@
 		2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSNetworkingSwiftTests.swift; sourceTree = "<group>"; };
 		2B599B191947B96D00A40C65 /* TSNetworking.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TSNetworking.swift; sourceTree = "<group>"; };
 		2B599B231947BD1E00A40C65 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
+		2BB592E21957A13400615074 /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
+		2BB592E41957A16A00615074 /* DemoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoViewController.swift; sourceTree = "<group>"; };
+		2BB592E61957A1F600615074 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		2BEFC4801949296C00283325 /* TSNetworkingSwift-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TSNetworkingSwift-Bridging-Header.h"; sourceTree = "<group>"; };
 		2BEFC4811949296C00283325 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		2BEFC4821949296C00283325 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
@@ -116,6 +122,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BB592E71957A1F600615074 /* UIKit.framework in Frameworks */,
 				2BEFC487194929CB00283325 /* Foundation.framework in Frameworks */,
 				2BEFC485194929C100283325 /* SystemConfiguration.framework in Frameworks */,
 				2B599B241947BD1E00A40C65 /* Security.framework in Frameworks */,
@@ -135,6 +142,7 @@
 		2B599AEF1947B90B00A40C65 = {
 			isa = PBXGroup;
 			children = (
+				2BB592E61957A1F600615074 /* UIKit.framework */,
 				2BEFC486194929CB00283325 /* Foundation.framework */,
 				2BEFC484194929C100283325 /* SystemConfiguration.framework */,
 				2B599B231947BD1E00A40C65 /* Security.framework */,
@@ -163,6 +171,8 @@
 				2BEFC4811949296C00283325 /* Reachability.h */,
 				2BEFC4821949296C00283325 /* Reachability.m */,
 				2BEFC4801949296C00283325 /* TSNetworkingSwift-Bridging-Header.h */,
+				2BB592E21957A13400615074 /* Storyboard.storyboard */,
+				2BB592E41957A16A00615074 /* DemoViewController.swift */,
 			);
 			path = TSNetworkingSwift;
 			sourceTree = "<group>";
@@ -282,6 +292,7 @@
 			files = (
 				2B599B021947B92900A40C65 /* Images.xcassets in Resources */,
 				2B0912DE1952C0F8000ACAB1 /* ourLord.jpg in Resources */,
+				2BB592E31957A13400615074 /* Storyboard.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,6 +313,7 @@
 				2B599B1A1947B96D00A40C65 /* TSNetworking.swift in Sources */,
 				2BEFC4831949296C00283325 /* Reachability.m in Sources */,
 				2B599B001947B92900A40C65 /* AppDelegate.swift in Sources */,
+				2BB592E51957A16A00615074 /* DemoViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

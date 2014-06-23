@@ -267,7 +267,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("ourLord.jpeg")
-        NSLog("destination path: \(destinationPath)")
+
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject?.isKindOfClass(NSURL.self), "download resultObject was not an NSURL")
