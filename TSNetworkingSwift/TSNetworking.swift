@@ -530,7 +530,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         if let params = parameters {
             for (key, keyValue) in enumerate(params) {
                 body.appendData(String("content-disposition: form-data; name=\"\(keyValue.key)\"\r\n\r\n\(keyValue.value)\r\n--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
-                NSLog("in field")
             }
         }
         
