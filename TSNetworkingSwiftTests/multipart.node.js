@@ -1,35 +1,55 @@
-//to get this module: npm install formidable@latest
+var http = require('http');
+var querystring = require('querystring');
+var multiparty = require('multiparty');
+var util = require('util');
 
+function processPost(request, response, callback) {
+    var queryData = "";
+    if(typeof callback !== 'function') return null;
 
-var formidable = require('formidable'),
-    http = require('http'),
-    util = require('util');
+    if(request.method == 'POST') {
+        request.on('data', function(data) {
+            queryData += data;
+            if(queryData.length > 1e6) {
+                queryData = "";
+                response.writeHead(413, {'Content-Type': 'text/plain'}).end();
+                request.connection.destroy();
+            }
+        });
 
+        request.on('end', function() {
+            request.post = querystring.parse(queryData);
+            callback();
+        });
 
-var server = http.createServer(function(req, res) {
-  if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
-    // parse a file upload
-    var form = new formidable.IncomingForm();
+    } else {
+        response.writeHead(405, {'Content-Type': 'text/plain'});
+        response.end();
+    }
+}
 
-    form.parse(req, function(err, fields, files) {
-      res.writeHead(200, {'content-type': 'text/plain'});
-      console.log(util.inspect({fields: fields, files: files}));
-      res.end('thanks for the upload')
-    });
+http.createServer(function(request, response) {
+    if(request.method == 'POST') {
+        var form = new multiparty.Form();
+        form.parse(request, function(err, fields, files) {
+          console.log(util.inspect({fields: fields, files: files}));
+        });
+        processPost(request, response, function() {
+            console.log(request.post);
+            // Use request.post here
+            
+            response.writeHead(200, "OK", {'Content-Type': 'text/plain'});
+            response.end();
+        });
+    } else {
+        response.writeHead(200, {'content-type': 'text/html'});
+        response.end(
+          '<form action="/upload" enctype="multipart/form-data" method="post">'+
+          '<input type="text" name="title"><br>'+
+          '<input type="file" name="upload" multiple="multiple"><br>'+
+          '<input type="submit" value="Upload">'+
+          '</form>'
+        );
+    }
 
-    return;
-  }
-
-  // show a file upload form
-  res.writeHead(200, {'content-type': 'text/html'});
-  res.end(
-    '<form action="/upload" enctype="multipart/form-data" method="post">'+
-    '<input type="text" name="title"><br>'+
-    '<input type="file" name="upload" multiple="multiple"><br>'+
-    '<input type="submit" value="Upload">'+
-    '</form>'
-  );
-});
-
-
-server.listen(8082, function() { console.log("Multipart listening on http://localhost:8082/"); });
+}).listen(8082);

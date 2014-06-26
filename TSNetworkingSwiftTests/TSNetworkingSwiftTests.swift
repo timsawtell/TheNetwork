@@ -612,4 +612,36 @@ class TSNetworkingSwiftTests: XCTestCase {
         waitForExpectationsWithTimeout(10, handler: nil)
     }
 
+    func testMultipartFormData() {
+        var testFinished = expectationWithDescription("test finished")
+        
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        
+        let params = NSMutableDictionary(object: "value", forKey: "key")
+        params.setValue("anotherValue", forKey: "anotherKey")
+        
+        let fm = NSFileManager()
+        let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
+        XCTAssertNotNil(sourcePath, "Couldn't find local picture of our lord")
+        let data = fm.contentsAtPath(sourcePath)
+        XCTAssertNotNil(data, "data was nil")        
+        var formDataFile = MultipartFormFile(formKeyName: "image", fileName: "ourlord.jpg", data: data, mimetype: "image/jpeg")
+        var formDataFile2 = MultipartFormFile(formKeyName: "image2", fileName: "ourlord2.jpg", data: data, mimetype: "image/jpeg")
+        var arrayOfFiles = MultipartFormFile[]()
+        arrayOfFiles.append(formDataFile)
+        arrayOfFiles.append(formDataFile2)
+        TSNWForeground.setBaseURLString(kMultipartUpload)
+        let uploadTask = TSNWForeground.multipartFormPost(nil, parameters: params, multipartFormFiles: arrayOfFiles, additionalHeaders: nil, successBlock: successBlock, errorBlock: errorBlock)
+        
+        waitForExpectationsWithTimeout(10, handler: nil)
+    }
 }

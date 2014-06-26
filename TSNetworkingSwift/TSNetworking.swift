@@ -26,6 +26,13 @@ class BlockHolder {
     var uploadCompletedBlock: URLSessionTaskCompletion?
 }
 
+struct MultipartFormFile {
+    var formKeyName: String
+    var fileName: String
+    var data: NSData
+    var mimetype: String
+}
+
 enum HTTP_METHOD: String {
     case POST = "POST"
     case GET = "GET"
@@ -206,7 +213,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             }
         } else if firstComponent == "text" {
             var parsedString = NSString(data: data, encoding: encoding)
-            NSLog("data: \(data)")
             return parsedString
         }
         return data!
@@ -506,6 +512,56 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         activeTasks++
         uploadTask.resume()
         return uploadTask
+    }
+    
+    func multipartFormPost(path: NSString?, parameters: NSDictionary?, multipartFormFiles: MultipartFormFile[]?, additionalHeaders: NSDictionary?, successBlock: TSNWSuccessBlock?, errorBlock: TSNWErrorBlock?) ->NSURLSessionDataTask {
+        
+        var requestURL = baseURL
+        if let suppliedPath = path {
+            requestURL = requestURL.URLByAppendingPathComponent(suppliedPath)
+        }
+        var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
+        request.HTTPMethod = HTTP_METHOD.POST.toRaw()
+        let boundary = "Z2FiZW5pc2xvdmVnYWJlbmlzbGlmZQ=="
+        let contentType = "multipart/form-data; boundary=\(boundary)"
+
+        var body = NSMutableData(data: String("--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+        
+        if let params = parameters {
+            for (key, keyValue) in enumerate(params) {
+                body.appendData(String("content-disposition: form-data; name=\"\(keyValue.key)\"\r\n\r\n\(keyValue.value)\r\n--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                NSLog("in field")
+            }
+        }
+        
+        if let files = multipartFormFiles {
+            for file in files {
+                body.appendData(String("content-disposition: form-data; name=\"\(file.formKeyName)\"; filename=\"\(file.fileName)\"\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(String("content-type: \(file.mimetype)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(String("content-transfer-encoding: binary\r\n\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(file.data)
+                body.appendData(String("\r\n--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+            }
+        }
+        
+        var headers = NSMutableDictionary(object: contentType, forKey: "content-type")
+        headers.setValue("\(body.length)", forKey: "content-length")
+        if let userHeaders = additionalHeaders {
+            headers.addEntriesFromDictionary(userHeaders)
+        }
+        addHeaders(headers, request: request)
+        
+        request.HTTPBody = body
+        
+        var completionBlock: URLSessionTaskCompletion = taskCompletionBlockForRequest(request, successBlock: successBlock!, errorBlock: errorBlock!)
+
+        var task = sharedURLSession.dataTaskWithRequest(request, completionHandler:completionBlock)
+        if let sharedApp = UIApplication.sharedApplication() {
+            sharedApp.networkActivityIndicatorVisible = true
+        }
+        activeTasks++
+        task.resume()
+        return task
     }
     
     // NSURLSessionDelegate
