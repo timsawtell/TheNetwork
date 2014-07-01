@@ -142,7 +142,10 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return count
     }
     
-    func taskCompletionBlockForRequest(request: NSMutableURLRequest, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> URLSessionTaskCompletion {
+    func taskCompletionBlockForRequest(request: NSMutableURLRequest,
+        successBlock: TSNWSuccessBlock? = nil,
+        errorBlock: TSNWErrorBlock? = nil) -> URLSessionTaskCompletion {
+            
         weak var weakSelf = self
         var completionBlock: URLSessionTaskCompletion = { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
             if let strongSelf = weakSelf {
@@ -154,10 +157,14 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                 }
                 
                 if let responseError = error {
-                    errorBlock(resultObject: nil, error: responseError, request: request, response: response)
+                    if let realErrorBlock = errorBlock {
+                        realErrorBlock(resultObject: nil, error: responseError, request: request, response: response)
+                    }
                     return
                 } else if let anError = strongSelf.validateResponse(response) {
-                    errorBlock(resultObject: nil, error: anError, request: request, response: response)
+                    if let realErrorBlock = errorBlock {
+                        realErrorBlock(resultObject: nil, error: anError, request: request, response: response)
+                    }
                     return
                 }
                 
@@ -188,7 +195,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                 } else {
                     parsedObject = strongSelf.resultBasedOnContentType("text", encoding: encoding, data: data)
                 }
-                successBlock(resultObject: parsedObject, request: request, response: response)
+                if let realSuccessBlock = successBlock {
+                    realSuccessBlock(resultObject: parsedObject, request: request, response: response)
+                }
             }
         }
         return completionBlock
@@ -316,10 +325,16 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
     }
     
-    func performDataTaskWithRelativePath(path: NSString?, method: HTTP_METHOD, parameters: NSDictionary?, additionalHeaders: NSDictionary?, successBlock: TSNWSuccessBlock?, errorBlock: TSNWErrorBlock?) ->NSURLSessionDataTask {
+    func performDataTaskWithRelativePath(relativePath: NSString?,
+        method: HTTP_METHOD,
+        successBlock: TSNWSuccessBlock? = nil,
+        errorBlock: TSNWErrorBlock? = nil,
+        parameters: NSDictionary? = nil,
+        additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
+            
         assert(!isBackgroundConfiguration, "Must be run in foreground session, not background session")
         var requestURL = baseURL
-        if let suppliedPath = path {
+        if let suppliedPath = relativePath {
             requestURL = requestURL.URLByAppendingPathComponent(suppliedPath)
         }
         var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
@@ -362,12 +377,15 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return task
     }
     
-    func downloadFromFullURL(sourceURLString: NSString, destinationPathString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWDownloadProgressBlock?, successBlock:
-        TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionDownloadTask {
+    func downloadFromFullURL(fullSourceURL: NSString,
+        destinationPathString: NSString,
+        successBlock: TSNWSuccessBlock? = nil,
+        errorBlock: TSNWErrorBlock? = nil,
+        progressBlock: TSNWDownloadProgressBlock? = nil,
+        additionalHeaders: NSDictionary? = nil) -> NSURLSessionDownloadTask {
             
         assert(isBackgroundConfiguration, "Must be run with TSNWBackground, not TSNWForeground")
-            
-        var request = NSMutableURLRequest(URL: NSURL(string: sourceURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
+        var request = NSMutableURLRequest(URL: NSURL(string: fullSourceURL.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
         request.HTTPMethod = HTTP_METHOD.GET.toRaw()
         
         weak var weakSelf = self
@@ -381,8 +399,10 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                     }
                 }
                 
-                if nil != error {
-                    errorBlock(resultObject: nil, error: error, request: request, response: nil)
+                if let realError = error {
+                    if let realErrorBlock = errorBlock {
+                        realErrorBlock(resultObject: nil, error: realError, request: request, response: nil)
+                    }
                     return
                 }
                 
@@ -394,7 +414,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                         // aint this some shit, it finished without error, but the file is not available at location
                         var text = NSLocalizedString("Unable to locate downloaded file", comment: "")
                         let notFoundError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                        errorBlock(resultObject: nil, error: notFoundError, request: request, response: nil)
+                        if let realErrorBlock = errorBlock {
+                            realErrorBlock(resultObject: nil, error: notFoundError, request: request, response: nil)
+                        }
                         return
                     }
                     
@@ -408,7 +430,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                         // son of a bitch
                         var text = NSLocalizedString("Download success, however destination path already exists, and that file was unable to be deleted", comment: "")
                         let cantDeleteError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                        errorBlock(resultObject: nil, error: cantDeleteError, request: request, response: nil)
+                        if let realErrorBlock = errorBlock {
+                            realErrorBlock(resultObject: nil, error: cantDeleteError, request: request, response: nil)
+                        }
                         return
                     }
                     
@@ -418,26 +442,32 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                         // double son of a bitch
                         var text = NSLocalizedString("Download success, however unable to move downloaded file to the destination path.", comment: "")
                         let cantMoveError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                        errorBlock(resultObject: nil, error: cantMoveError, request: request, response: nil)
+                        if let realErrorBlock = errorBlock {
+                            realErrorBlock(resultObject: nil, error: cantMoveError, request: request, response: nil)
+                        }
                         return
                     }
                     // all worked as intended
                     var finalLocation = NSURL(fileURLWithPath: destinationPathString)
-                    successBlock(resultObject: finalLocation, request: request, response: nil)
+                    if let realSuccessBlock = successBlock {
+                        realSuccessBlock(resultObject: finalLocation, request: request, response: nil)
+                    }
                     return
                 }
                 
                 var text = NSLocalizedString("Unable to locate downloaded file.", comment: "")
                 let cantFindError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-                errorBlock(resultObject: nil, error: cantFindError, request: request, response: nil)
+                if let realErrorBlock = errorBlock {
+                    realErrorBlock(resultObject: nil, error: cantFindError, request: request, response: nil)
+                }
             }
         }
         
         addHeaders(additionalHeaders, request: request)
         var downloadTask = sharedURLSession.downloadTaskWithRequest(request)
-        if let actualProgressBlock = progressBlock {
+        if let realProgressBlock = progressBlock {
             var holder = BlockHolder()
-            holder.downloadProgressBlock = actualProgressBlock
+            holder.downloadProgressBlock = realProgressBlock
             downloadProgressBlocks.setObject(holder, forKey: downloadTask.taskIdentifier)
         }
         var holder = BlockHolder()
@@ -451,35 +481,33 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return downloadTask
     }
     
-    func uploadInBackground(localsourcePath: NSString, destinationFullURLString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWUploadProgressBlock, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionUploadTask? {
+    func uploadInBackground(sourceURL: NSURL,
+        destinationFullURLString: NSString,
+        successBlock: TSNWSuccessBlock? = nil,
+        errorBlock: TSNWErrorBlock? = nil,
+        progressBlock: TSNWUploadProgressBlock? = nil,
+        additionalHeaders: NSDictionary? = nil) -> NSURLSessionUploadTask {
         
         assert(isBackgroundConfiguration, "Must be run with TSNWBackground, not TSNWForeground")
         var fm = NSFileManager()
         var error: NSError?
-        
-        if !fm.fileExistsAtPath(localsourcePath) {
-            var text = NSLocalizedString("Unable to locate file to upload", comment: "")
-            let cantOpenError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
-            errorBlock(resultObject: nil, error: cantOpenError, request: nil, response: nil)
-            
-            return nil
-        }
-        
+       
         var request = NSMutableURLRequest(URL: NSURL(string: destinationFullURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
         request.HTTPMethod = HTTP_METHOD.POST.toRaw()
         var completionBlock = taskCompletionBlockForRequest(request, successBlock: successBlock, errorBlock: errorBlock)
         addHeaders(additionalHeaders, request: request)
-        var uploadTask = sharedURLSession.uploadTaskWithRequest(request, fromFile:NSURL(fileURLWithPath: localsourcePath))
-        if nil != progressBlock {
+        var uploadTask = sharedURLSession.uploadTaskWithRequest(request, fromFile:sourceURL)
+
+        if let realProgressBlock = progressBlock {
             var holder = BlockHolder()
-            holder.uploadProgressBlock = progressBlock
+            holder.uploadProgressBlock = realProgressBlock
             uploadProgressBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
         }
-        if nil != completionBlock {
-            var holder = BlockHolder()
-            holder.uploadCompletedBlock = completionBlock
-            uploadCompletedBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
-        }
+
+        var holder = BlockHolder()
+        holder.uploadCompletedBlock = completionBlock
+        uploadCompletedBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
+        
         if let sharedApp = UIApplication.sharedApplication() {
             sharedApp.networkActivityIndicatorVisible = true
         }
@@ -488,7 +516,12 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return uploadTask
     }
     
-    func uploadInForeground(data: NSData, destinationFullURLString: NSString, additionalHeaders: NSDictionary?, progressBlock: TSNWUploadProgressBlock, successBlock: TSNWSuccessBlock, errorBlock: TSNWErrorBlock) -> NSURLSessionUploadTask {
+    func uploadInForeground(data: NSData,
+        destinationFullURLString: NSString,
+        successBlock: TSNWSuccessBlock? = nil,
+        errorBlock: TSNWErrorBlock? = nil,
+        progressBlock: TSNWUploadProgressBlock? = nil,
+        additionalHeaders: NSDictionary? = nil) -> NSURLSessionUploadTask {
         
         assert(!isBackgroundConfiguration, "Must be run with TSNWForeground, not TSNWBackground")
         
@@ -498,10 +531,13 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         addHeaders(additionalHeaders, request: request)
         var uploadTask = sharedURLSession.uploadTaskWithRequest(request, fromData: data)
         
+        if let realProgressBlock = progressBlock {
+            var holder = BlockHolder()
+            holder.uploadProgressBlock = realProgressBlock
+            uploadProgressBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
+        }
+            
         var holder = BlockHolder()
-        holder.uploadProgressBlock = progressBlock
-        uploadProgressBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
-
         holder = BlockHolder()
         holder.uploadCompletedBlock = completionBlock
         uploadCompletedBlocks.setObject(holder, forKey: uploadTask.taskIdentifier)
@@ -514,10 +550,15 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return uploadTask
     }
     
-    func multipartFormPost(path: NSString?, parameters: NSDictionary?, multipartFormFiles: MultipartFormFile[]?, additionalHeaders: NSDictionary?, successBlock: TSNWSuccessBlock?, errorBlock: TSNWErrorBlock?) ->NSURLSessionDataTask {
+    func multipartFormPost(relativePath: NSString?,
+        parameters: NSDictionary?,
+        multipartFormFiles: MultipartFormFile[]?,
+        successBlock: TSNWSuccessBlock?,
+        errorBlock: TSNWErrorBlock?,
+        additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
         
         var requestURL = baseURL
-        if let suppliedPath = path {
+        if let suppliedPath = relativePath {
             requestURL = requestURL.URLByAppendingPathComponent(suppliedPath)
         }
         var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
@@ -549,7 +590,6 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             headers.addEntriesFromDictionary(userHeaders)
         }
         addHeaders(headers, request: request)
-        
         request.HTTPBody = body
         
         var completionBlock: URLSessionTaskCompletion = taskCompletionBlockForRequest(request, successBlock: successBlock!, errorBlock: errorBlock!)
