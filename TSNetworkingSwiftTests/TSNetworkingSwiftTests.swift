@@ -240,8 +240,6 @@ class TSNetworkingSwiftTests: XCTestCase {
             XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var body = NSString(data: request.HTTPBody, encoding: NSUTF8StringEncoding)
             XCTAssertNotNil(body, "body had no content for the POST")
-            var requestHeaders = request.allHTTPHeaderFields
-            XCTAssertTrue(requestHeaders.valueForKey("Content-Type").isEqualToString("application/json"), "Content-Type header missing")
             testFinished.fulfill()
         }
         
@@ -250,13 +248,144 @@ class TSNetworkingSwiftTests: XCTestCase {
             XCTFail("in the error block, error was: \(error.localizedDescription)")
             testFinished.fulfill()
         }
-        var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWForeground.setBaseURLString(kNoAuthNeeded)
         
-        let task = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams, additionalHeaders: additionalHeaders)
+        let task = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
-        XCTAssertEqual(task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String, "application/json", "the content type was not set")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * As a POST request using the default JSON body formatter I should have a HTTPMethod of "POST"
+    * I should have a request body is JSON
+    * I should contain headers in the requests stating the content-type
+    */
+    func testJSONPostWithPameters() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            
+            let bodyData = request.HTTPBody
+            XCTAssertNotNil(bodyData, "No body data for the POST")
+            
+            var error: NSError?
+            let parsedJSON: AnyObject = NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableContainers, error: &error)
+            
+            XCTAssertNotNil(parsedJSON, "Request body was not valid JSON")
+            if let realError = error {
+                XCTFail("Parse error: \(realError.localizedDescription)")
+            }
+            if let jsonDict: NSDictionary = parsedJSON as? NSDictionary {
+                let found = jsonDict.valueForKey("key") as String
+                XCTAssertEqual(found, "value")
+            } else {
+                XCTFail("Parsed JSON was not a dictionary")
+            }
+            
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.bodyFormatter = TSNBodyFormatterJSON()
+        
+        let task = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
+        var value = task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String
+        XCTAssertTrue(value.bridgeToObjectiveC().containsString("application/json"), "the default JSON content type was not set")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * As a POST request using the default JSON body formatter I should have a HTTPMethod of "POST"
+    * I should have a request body is JSON
+    * I should contain headers in the requests stating the content-type
+    */
+    func testXMLPostWithPameters() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            
+            let bodyData = request.HTTPBody
+            XCTAssertNotNil(bodyData, "No body data for the POST")
+            
+            var error: NSError?
+            let parsedXML: AnyObject = NSPropertyListSerialization.propertyListWithData(bodyData, options: 0, format: nil, error: &error)
+            
+            XCTAssertNotNil(parsedXML, "Request body was not valid JSON")
+            if let realError = error {
+                XCTFail("Parse error: \(realError.localizedDescription)")
+            }
+            if let jsonDict: NSDictionary = parsedXML as? NSDictionary {
+                let found = jsonDict.valueForKey("key") as String
+                XCTAssertEqual(found, "value")
+            } else {
+                NSLog("----\(parsedXML.self)")
+                XCTFail("Parsed XML was not a dictionary")
+            }
+            
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.bodyFormatter = TSNBodyFormatterPListXML() // change the default body formatter
+        let task = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
+        var value = task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String
+        XCTAssertTrue(value.bridgeToObjectiveC().containsString("application/x-plist"), "the default x-plist content type was not set")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * As a POST request using the default JSON body formatter I should have a HTTPMethod of "POST"
+    * I should have a request body is JSON
+    * I should contain headers in the requests stating the content-type
+    */
+    func testCustomPostBody() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            
+            let bodyData = request.HTTPBody
+            XCTAssertNotNil(bodyData, "No body data for the POST")
+            var string = NSString(data: bodyData, encoding: NSUTF8StringEncoding)
+            XCTAssertNotNil(string, "body string was nil")
+            NSLog(string)
+            XCTAssertTrue(string.containsString("some crazy"), "didn't contain the string from our custom body formatter")
+            
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        TSNWForeground.setBaseURLString(kNoAuthNeeded)
+        TSNWForeground.bodyFormatter = TSNBodyFormatterManual(block: {() -> NSData in
+            var string = "some crazy\nnew line\nstring with no \npattern\nat all"
+            return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+        })
+        let task = TSNWForeground.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -648,4 +777,5 @@ class TSNetworkingSwiftTests: XCTestCase {
         let uploadTask = TSNWForeground.multipartFormPost(nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)
         waitForExpectationsWithTimeout(10, handler: nil)
     }
+
 }

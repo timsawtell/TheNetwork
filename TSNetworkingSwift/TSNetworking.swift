@@ -78,6 +78,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     var activeTasks = 0
     var sessionCompletionHandler: SessionCompletionHandler
     var securityPolicy: AFSecurityPolicy
+    var bodyFormatter: TSNBodyFormatter
     
     init(background: Bool) {
         if background {
@@ -88,6 +89,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         acceptableStatusCodes = NSIndexSet(indexesInRange: NSMakeRange(200, 100))
         isBackgroundConfiguration = background
         securityPolicy = AFSecurityPolicy.defaultPolicy()
+        bodyFormatter = TSNBodyFormatterJSON()
         super.init()
         defaultConfiguration.allowsCellularAccess = true
         defaultConfiguration.timeoutIntervalForRequest = 30
@@ -251,11 +253,15 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
         if let additionalHeaders = headers {
             for keyVal in additionalHeaders {
-                request.addValue(keyVal.value as String, forHTTPHeaderField: keyVal.key as String)
+                if let existing = request.valueForHTTPHeaderField(keyVal.key as String) {} else {
+                    request.addValue(keyVal.value as String, forHTTPHeaderField: keyVal.key as String)
+                }
             }
         }
         for keyVal in sessionHeaders {
-            request.addValue(keyVal.value as String, forHTTPHeaderField: keyVal.key as String)
+            if let existing = request.valueForHTTPHeaderField(keyVal.key as String) {} else {
+                request.addValue(keyVal.value as String, forHTTPHeaderField: keyVal.key as String)
+            }
         }
     }
     
@@ -339,15 +345,16 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
         var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
         request.HTTPMethod = method.toRaw()
-        
-        if let params = parameters {
-            switch method {
-            case HTTP_METHOD.POST, HTTP_METHOD.PUT, HTTP_METHOD.PATCH:
-                var error: NSError?
-                if let jsonData = NSJSONSerialization.dataWithJSONObject(parameters, options: NSJSONWritingOptions.PrettyPrinted, error: &error) {
-                    request.HTTPBody = jsonData
-                }
-            default:
+            
+        switch method {
+        case HTTP_METHOD.POST, HTTP_METHOD.PUT, HTTP_METHOD.PATCH:
+            // The body formatter based on either the `paramters` (if there are any) or the manual body formatter block will be run to assign data to request.HTTPBody
+            if let error = bodyFormatter.formatData(parameters, userRequest:request) {
+                NSLog("Error attempting to format request body: \(error.localizedDescription). Using no HTTPBody this request.");
+            }
+            
+        default:
+            if let params = parameters { // make sure that the user has actually supplied some parameters
                 var urlString = request.URL.absoluteString.bridgeToObjectiveC()
                 var range = urlString.rangeOfString("?")
                 var addQMark = false

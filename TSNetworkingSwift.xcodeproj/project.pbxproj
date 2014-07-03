@@ -13,6 +13,8 @@
 		2B599B0E1947B92900A40C65 /* TSNetworkingSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */; };
 		2B599B1A1947B96D00A40C65 /* TSNetworking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B599B191947B96D00A40C65 /* TSNetworking.swift */; };
 		2B599B241947BD1E00A40C65 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B599B231947BD1E00A40C65 /* Security.framework */; };
+		2B8B2CD11964D0DE0046936F /* TSNBodyFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA008CB19628F4F00F73206 /* TSNBodyFormatter.swift */; };
+		2BA008CC19628F4F00F73206 /* TSNBodyFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA008CB19628F4F00F73206 /* TSNBodyFormatter.swift */; };
 		2BB592E31957A13400615074 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2BB592E21957A13400615074 /* Storyboard.storyboard */; };
 		2BB592E51957A16A00615074 /* DemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BB592E41957A16A00615074 /* DemoViewController.swift */; };
 		2BB592E71957A1F600615074 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BB592E61957A1F600615074 /* UIKit.framework */; };
@@ -73,6 +75,13 @@
 			remoteGlobalIDString = 2B599AF91947B92900A40C65;
 			remoteInfo = TSNetworkingSwift;
 		};
+		2B8B2CCF1964D0D20046936F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2B599AF91947B92900A40C65;
+			remoteInfo = TSNetworkingSwift;
+		};
 		2BBC4610194937F700BF8F8A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2B599AF01947B90B00A40C65 /* Project object */;
@@ -114,6 +123,7 @@
 		2B599B0D1947B92900A40C65 /* TSNetworkingSwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSNetworkingSwiftTests.swift; sourceTree = "<group>"; };
 		2B599B191947B96D00A40C65 /* TSNetworking.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TSNetworking.swift; sourceTree = "<group>"; };
 		2B599B231947BD1E00A40C65 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
+		2BA008CB19628F4F00F73206 /* TSNBodyFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TSNBodyFormatter.swift; sourceTree = "<group>"; };
 		2BB592E21957A13400615074 /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
 		2BB592E41957A16A00615074 /* DemoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoViewController.swift; sourceTree = "<group>"; };
 		2BB592E61957A1F600615074 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -182,6 +192,7 @@
 				2BEFC4801949296C00283325 /* TSNetworkingSwift-Bridging-Header.h */,
 				2BB592E21957A13400615074 /* Storyboard.storyboard */,
 				2BB592E41957A16A00615074 /* DemoViewController.swift */,
+				2BA008CB19628F4F00F73206 /* TSNBodyFormatter.swift */,
 			);
 			path = TSNetworkingSwift;
 			sourceTree = "<group>";
@@ -266,6 +277,7 @@
 				2BBC46151949392300BF8F8A /* PBXTargetDependency */,
 				2BBC46171949392A00BF8F8A /* PBXTargetDependency */,
 				2BDB61BA1957BD3C00072775 /* PBXTargetDependency */,
+				2B8B2CD01964D0D20046936F /* PBXTargetDependency */,
 			);
 			name = TSNetworkingSwiftTests;
 			productName = TSNetworkingSwiftTests;
@@ -395,6 +407,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BA008CC19628F4F00F73206 /* TSNBodyFormatter.swift in Sources */,
 				2B599B1A1947B96D00A40C65 /* TSNetworking.swift in Sources */,
 				2B599B001947B92900A40C65 /* AppDelegate.swift in Sources */,
 				2BB592E51957A16A00615074 /* DemoViewController.swift in Sources */,
@@ -405,6 +418,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B8B2CD11964D0DE0046936F /* TSNBodyFormatter.swift in Sources */,
 				2BBC46121949380A00BF8F8A /* TSNetworking.swift in Sources */,
 				2B599B0E1947B92900A40C65 /* TSNetworkingSwiftTests.swift in Sources */,
 			);
@@ -448,6 +462,11 @@
 			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
 			targetProxy = 2B599B211947BD0F00A40C65 /* PBXContainerItemProxy */;
 		};
+		2B8B2CD01964D0D20046936F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
+			targetProxy = 2B8B2CCF1964D0D20046936F /* PBXContainerItemProxy */;
+		};
 		2BBC4611194937F700BF8F8A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 2B599AF91947B92900A40C65 /* TSNetworkingSwift */;
@@ -474,6 +493,7 @@
 		2B599AF41947B90B00A40C65 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
 		};
