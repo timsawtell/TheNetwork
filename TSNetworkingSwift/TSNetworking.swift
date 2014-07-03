@@ -577,22 +577,22 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         
         if let params = parameters {
             for (key, keyValue) in enumerate(params) {
-                body.appendData(String("content-disposition: form-data; name=\"\(keyValue.key)\"\r\n\r\n\(keyValue.value)\r\n--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(String("Content-Disposition: form-data; name=\"\(keyValue.key)\"\r\n\r\n\(keyValue.value)\r\n--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
             }
         }
         
         if let files = multipartFormFiles {
             for file in files {
-                body.appendData(String("content-disposition: form-data; name=\"\(file.formKeyName)\"; filename=\"\(file.fileName)\"\r\n").dataUsingEncoding(NSUTF8StringEncoding))
-                body.appendData(String("content-type: \(file.mimetype)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
-                body.appendData(String("content-transfer-encoding: binary\r\n\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(String("Content-Disposition: form-data; name=\"\(file.formKeyName)\"; filename=\"\(file.fileName)\"\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(String("Content-Type: \(file.mimetype)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
+                body.appendData(String("Content-Transfer-Encoding: binary\r\n\r\n").dataUsingEncoding(NSUTF8StringEncoding))
                 body.appendData(file.data)
                 body.appendData(String("\r\n--\(boundary)\r\n").dataUsingEncoding(NSUTF8StringEncoding))
             }
         }
         
-        var headers = NSMutableDictionary(object: contentType, forKey: "content-type")
-        headers.setValue("\(body.length)", forKey: "content-length")
+        var headers = NSMutableDictionary(object: contentType, forKey: "Content-Type")
+        headers.setValue("\(body.length)", forKey: "Content-Length")
         if let userHeaders = additionalHeaders {
             headers.addEntriesFromDictionary(userHeaders)
         }

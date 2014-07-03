@@ -1,45 +1,29 @@
 var http = require('http');
-var querystring = require('querystring');
 var multiparty = require('multiparty');
-var util = require('util');
-
-function processPost(request, response, callback) {
-    var queryData = "";
-    if(typeof callback !== 'function') return null;
-
-    if(request.method == 'POST') {
-        request.on('data', function(data) {
-            queryData += data;
-            if(queryData.length > 1e6) {
-                queryData = "";
-                response.writeHead(413, {'Content-Type': 'text/plain'}).end();
-                request.connection.destroy();
-            }
-        });
-
-        request.on('end', function() {
-            request.post = querystring.parse(queryData);
-            callback();
-        });
-
-    } else {
-        response.writeHead(405, {'Content-Type': 'text/plain'});
-        response.end();
-    }
-}
+var fs = require('fs');
 
 http.createServer(function(request, response) {
     if(request.method == 'POST') {
         var form = new multiparty.Form();
-        form.parse(request, function(err, fields, files) {
-          console.log(util.inspect({fields: fields, files: files}));
+        var size = '';
+        form.on('file', function(name, file){
+            var tmp_path = file.path
+            var target_path = __dirname + '/uploaded_images/' + file.originalFilename;
+            console.log(tmp_path);
+            console.log(target_path);
+            console.log('filename: ' + name);
+            console.log('fileSize: '+ (size / 1024));
+            fs.renameSync(tmp_path, target_path, function(err) {
+                if(err) console.error(err.stack);
+            });
         });
-        processPost(request, response, function() {
-            console.log(request.post);
-            // Use request.post here
-            
-            response.writeHead(200, "OK", {'Content-Type': 'text/plain'});
-            response.end();
+
+        form.parse(request, function(err, fields, files) {
+            Object.keys(fields).forEach(function(name) {
+                console.log('got field named ' + name);
+            });
+            response.writeHead(200, {'content-type': 'text/html'});
+            response.end()
         });
     } else {
         response.writeHead(200, {'content-type': 'text/html'});

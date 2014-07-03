@@ -10,3 +10,4 @@
 project.xcworkspace/
 xcuserdata/
 Podfile.lock
+TSNetworkingSwiftTests/uploaded_images/*.jpg
