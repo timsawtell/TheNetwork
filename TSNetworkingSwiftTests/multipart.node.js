@@ -19,9 +19,6 @@ http.createServer(function(request, response) {
         });
 
         form.parse(request, function(err, fields, files) {
-            Object.keys(fields).forEach(function(name) {
-                console.log('got field named ' + name);
-            });
             response.writeHead(200, {'content-type': 'text/html'});
             response.end()
         });

@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func application(application: UIApplication!, handleEventsForBackgroundURLSession identifier: String!, completionHandler: (() -> Void)!) {
-        TSNWBackground.sessionCompletionHandler = completionHandler
+        TSNWManager.sessionCompletionHandler = completionHandler
     }
 
     func applicationWillResignActive(application: UIApplication) {
