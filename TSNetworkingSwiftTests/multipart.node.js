@@ -8,7 +8,7 @@ http.createServer(function(request, response) {
         var size = '';
         form.on('file', function(name, file){
             var tmp_path = file.path
-            var target_path = __dirname + '/uploaded_images/' + file.originalFilename;
+            var target_path = __dirname + '/uploaded_from_unit_test/' + file.originalFilename;
             console.log(tmp_path);
             console.log(target_path);
             console.log('filename: ' + name);
