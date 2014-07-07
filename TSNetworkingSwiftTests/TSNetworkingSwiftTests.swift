@@ -676,8 +676,7 @@ class TSNetworkingSwiftTests: XCTestCase {
             testFinished.fulfill()
         }
         
-        let params = NSMutableDictionary(object: "value", forKey: "key")
-        params.setValue("anotherValue", forKey: "anotherKey")
+        let params = ["key": "value", "anotherkey": "anothervalue"]
         
         let fm = NSFileManager()
         let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
@@ -686,7 +685,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertNotNil(data, "data was nil")        
         var formDataFile = MultipartFormFile(formKeyName: "image", fileName: "ourlord.jpg", data: data, mimetype: "image/jpeg")
         var formDataFile2 = MultipartFormFile(formKeyName: "image2", fileName: "ourlord2.jpg", data: data, mimetype: "image/jpeg")
-        var arrayOfFiles = [formDataFile, formDataFile2]
+        let arrayOfFiles = [formDataFile, formDataFile2]
         
         TSNWManager.setBaseURLString(kMultipartUpload)
         let uploadTask = TSNWManager.multipartFormPost(relativePath: nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)

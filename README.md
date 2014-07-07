@@ -175,10 +175,8 @@ Note: the progressBlock is explicitly executed on the main thread. You don't nee
     let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
     let data = fm.contentsAtPath(sourcePath)
     var formDataFile = MultipartFormFile(formKeyName: "image", fileName: "ourlord.jpg", data: data, mimetype: "image/jpeg")
-    var arrayOfFiles = MultipartFormFile[]()
-    arrayOfFiles.append(formDataFile)
+    let arrayOfFiles = [formDataFile]
     
-    let params = NSMutableDictionary(object: "value", forKey: "key")
-    params.setValue("anotherValue", forKey: "anotherKey")
+    let params = ["key": "value", "anotherkey": "anothervalue"]
     
     let uploadTask = TSNWManager.multipartFormPost(relativePath: nil, parameters: params, multipartFormFiles: arrayOfFiles)
