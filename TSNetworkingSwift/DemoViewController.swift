@@ -58,7 +58,7 @@ class DemoViewController: UIViewController {
         }
         
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
-        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("ourLord.jpeg")
+        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("10MB.zip")
         let dlFile = "http://ipv4.download.thinkbroadband.com/10MB.zip"
         
         TSNWManager.downloadFromFullURL(dlFile, destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
