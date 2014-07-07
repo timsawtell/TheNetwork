@@ -41,19 +41,28 @@ Be sure to add this to you AppDelegate. It will ensure that your uploads/downloa
 
 ## Warning
 
-The success and error blocks are executed on whatever thread apple decides.
-I suggest if you're doing UI changes in these blocks that you dispatch_async and get the main queue.
+Any progressBlock is run on the main thread. Feel free to do direct UI manipulation in any progress blocks.
+
+The successBlock and errorBlocks are executed on whatever thread apple decides. I suggest if you're doing UI changes in these blocks that you dispatch_async and get the main queue.
+
 Warning for new players: never directly reference self inside a block, use this style to avoid retain cycles
     
     weak var weakSelf = self
     let successBlock: TSNWSuccessBlock = { (resultObject, request, response) in
     	if let strongSelf = weakSelf {
-            strongSelf.progressBar.progress = 0
+    		dispatch_async(dispatch_get_main_queue(), {
+                strongSelf.progressBar.progress = 0 // UI changes, need to be run on main thread if called inside a success or error block
+            })
         } else {
         	// the weak reference has since been deallocaed, just return and don't try and run any code. 
         	return
         }
-    };
+    }
+
+    let progressBlock: TSNWUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
+    	var progress = (Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
+        strongSelf.progressBar.progress = progress // UI changes in a progressBlock, no need to attempt to run on main thread, TSNetworkingSwift is already executing this on the main thread
+    }
 
 ## Optionals in the various methods
 
@@ -112,6 +121,10 @@ Warning for new players: never directly reference self inside a block, use this 
 
 ## Download
 
+
+Note: the progressBlock is explicitly executed on the main thread. You don't need to dispatch_async to get the main queue in the progressBlock
+
+
     let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
     let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("5mb.zip")
     
@@ -130,6 +143,10 @@ Warning for new players: never directly reference self inside a block, use this 
     let task = TSNWManager.downloadFromFullURL("http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
 
 ## Upload
+
+
+Note: the progressBlock is explicitly executed on the main thread. You don't need to dispatch_async to get the main queue in the progressBlock
+
 
     let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
         NSLog("\(resultObject)") // resultObject will be whatever the server responded with when the upload finished.
