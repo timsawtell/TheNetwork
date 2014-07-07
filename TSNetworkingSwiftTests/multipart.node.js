@@ -6,6 +6,7 @@ http.createServer(function(request, response) {
     if(request.method == 'POST') {
         var form = new multiparty.Form();
         var size = '';
+        var fileCount = 0;
         form.on('file', function(name, file){
             var tmp_path = file.path
             var target_path = __dirname + '/uploaded_from_unit_test/' + file.originalFilename;
@@ -16,12 +17,13 @@ http.createServer(function(request, response) {
             fs.renameSync(tmp_path, target_path, function(err) {
                 if(err) console.error(err.stack);
             });
+            fileCount++;
         });
 
         form.parse(request, function(err, fields, files) {
-            response.writeHead(200, {'content-type': 'text/html'});
-            response.end()
         });
+        response.writeHead(200, {'content-type': 'text/html'});
+        response.end('thanks, received ' + fileCount + ' files')
     } else {
         response.writeHead(200, {'content-type': 'text/html'});
         response.end(

@@ -389,7 +389,7 @@ class TSNetworkingSwiftTests: XCTestCase {
     /*
     * Download tests
     */
-    
+
     /*
     * As a download task I should have a state of "Running" after I am created
     * I should have a resultObject that is an NSURL
@@ -405,6 +405,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject?.isKindOfClass(NSURL.self), "download resultObject was not an NSURL")
+
             let fm = NSFileManager()
             XCTAssertTrue(fm.fileExistsAtPath(destinationPath), "file doesnt exist at download path")
             //better delete it
@@ -439,7 +440,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         var testFinished = expectationWithDescription("test finished")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
-        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("1mb.mp4")
+        let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("5mb.zip")
         let fm = NSFileManager()
         
         let successBlock: TSNWSuccessBlock = { (resultObject, request, response) -> Void in
@@ -510,6 +511,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
+    
     /*
     * upload tests
     */
@@ -629,7 +631,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
-
+    
     func testMultipartFormData() {
         var testFinished = expectationWithDescription("test finished")
         
@@ -657,6 +659,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         var arrayOfFiles = MultipartFormFile[]()
         arrayOfFiles.append(formDataFile)
         arrayOfFiles.append(formDataFile2)
+        
         TSNWManager.setBaseURLString(kMultipartUpload)
         let uploadTask = TSNWManager.multipartFormPost(nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)
         waitForExpectationsWithTimeout(10, handler: nil)
