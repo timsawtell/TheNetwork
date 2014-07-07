@@ -3,7 +3,7 @@ TSNetworkingSwift
 
 A networking library writen in Swift that's tailored for the most common web services requirements.
 
-Simple, predictable, reliable.
+Simple, predictable, reliable. (HA! To the extent that the Swift language allows)
 
 ## Features
 
