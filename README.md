@@ -17,7 +17,7 @@ Simple, predictable, reliable. (HA! To the extent that the Swift language allows
 
 Sorry but until Apple allows XCode to build static libraries with Swift code there is no cocoapod. Yet. Stay tuned.
 
-## AppDelegate.m
+## AppDelegate
 
 Be sure to add this to you AppDelegate. It will ensure that your uploads/downloads that finish when the app has been suspended run their completion blocks.
 

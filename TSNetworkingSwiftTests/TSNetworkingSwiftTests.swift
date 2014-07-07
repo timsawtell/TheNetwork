@@ -341,8 +341,8 @@ class TSNetworkingSwiftTests: XCTestCase {
             if let realError = error {
                 XCTFail("Parse error: \(realError.localizedDescription)")
             }
-            if let jsonDict: NSDictionary = parsedXML as? NSDictionary {
-                let found = jsonDict.valueForKey("key") as String
+            if let xmlDict: NSDictionary = parsedXML as? NSDictionary {
+                let found = xmlDict.valueForKey("key") as String
                 XCTAssertEqual(found, "value")
             } else {
                 XCTFail("Parsed XML was not a dictionary")
