@@ -61,7 +61,7 @@ class DemoViewController: UIViewController {
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("10MB.zip")
         let dlFile = "http://ipv4.download.thinkbroadband.com/10MB.zip"
         
-        TSNWManager.downloadFromFullURL(dlFile, destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        TSNWManager.download(fullSourceURL: dlFile, destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
     }
     
 }

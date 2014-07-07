@@ -180,7 +180,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
                         }
                     }
                     var responseHeaders = httpResponse.allHeaderFields
-                    if let contentType: NSString = responseHeaders.valueForKey("Content-Type") as? NSString {
+                    if let contentType: NSString = responseHeaders["Content-Type"] as? NSString {
                         var useableContentType: NSString = contentType.lowercaseString
                         var location = useableContentType.rangeOfString(";").location
                         if location > 0 && location < useableContentType.length - 1 {
@@ -244,8 +244,8 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     func addHeaders(headers: NSDictionary?, request: NSMutableURLRequest) {
         if username.isSane() && password.isSane() {
-            var base64Encoded = "Basic " + "\(username):\(password)".dataUsingEncoding(NSUTF8StringEncoding).base64EncodedStringWithOptions(NSDataBase64EncodingOptions.fromRaw(0)!)
-            request.addValue(base64Encoded, forHTTPHeaderField: "Authorization")
+            var base64Encoded = "Basic " + String("\(username):\(password)").dataUsingEncoding(NSUTF8StringEncoding)!.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.fromRaw(0)!)
+            request.setValue(base64Encoded, forHTTPHeaderField: "Authorization")
         }
         if let additionalHeaders = headers {
             for keyVal in additionalHeaders {
@@ -283,11 +283,10 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     func addDownloadProgressBlock(progressBlock: TSNWDownloadProgressBlock, task: NSURLSessionTask) {
         switch task.state {
         case .Running, .Suspended:
-            if nil != progressBlock {
-                var holder = BlockHolder()
-                holder.downloadProgressBlock = progressBlock
-                downloadProgressBlocks.setObject(holder, forKey: task.taskIdentifier)
-            }
+            var holder = BlockHolder()
+            holder.downloadProgressBlock = progressBlock
+            downloadProgressBlocks.setObject(holder, forKey: task.taskIdentifier)
+            
         default:
             break
         }
@@ -295,11 +294,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     func addUploadProgressBlock(progressBlock: TSNWUploadProgressBlock, task: NSURLSessionTask) {
         if NSURLSessionTaskState.Running == task.state {
-            if nil != progressBlock {
-                var holder = BlockHolder()
-                holder.uploadProgressBlock = progressBlock
-                uploadProgressBlocks.setObject(holder, forKey: task.taskIdentifier)
-            }
+            var holder = BlockHolder()
+            holder.uploadProgressBlock = progressBlock
+            uploadProgressBlocks.setObject(holder, forKey: task.taskIdentifier)
         }
     }
     
@@ -327,7 +324,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
     }
     
-    func performDataTaskWithRelativePath(relativePath: NSString?,
+    func performDataTask(#relativePath: NSString?,
         method: HTTP_METHOD,
         successBlock: TSNWSuccessBlock? = nil,
         errorBlock: TSNWErrorBlock? = nil,
@@ -383,7 +380,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return task
     }
     
-    func downloadFromFullURL(fullSourceURL: NSString,
+    func download(#fullSourceURL: NSString,
         destinationPathString: NSString,
         successBlock: TSNWSuccessBlock? = nil,
         errorBlock: TSNWErrorBlock? = nil,
@@ -486,7 +483,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return downloadTask
     }
     
-    func uploadSourceURL(sourceURL: NSURL,
+    func upload(#sourceURL: NSURL,
         destinationFullURLString: NSString,
         successBlock: TSNWSuccessBlock? = nil,
         errorBlock: TSNWErrorBlock? = nil,
@@ -523,9 +520,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         return uploadTask
     }
     
-    func multipartFormPost(relativePath: NSString?,
+    func multipartFormPost(#relativePath: NSString?,
         parameters: NSDictionary? = nil,
-        multipartFormFiles: MultipartFormFile[]? = nil,
+        multipartFormFiles: [MultipartFormFile]? = nil,
         successBlock: TSNWSuccessBlock? = nil,
         errorBlock: TSNWErrorBlock? = nil,
         additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
@@ -587,7 +584,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         var credential: NSURLCredential? = nil
         
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-            if self.securityPolicy.evaluateServerTrust(challenge.protectionSpace.serverTrust, forDomain: challenge.protectionSpace.host) {
+            if securityPolicy.evaluateServerTrust(challenge.protectionSpace.serverTrust, forDomain: challenge.protectionSpace.host) {
                 disposition = .UseCredential
                 credential = NSURLCredential(forTrust: challenge.protectionSpace.serverTrust)
             } else {
@@ -642,7 +639,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         // if it finishes with error, but has downloaded data, and we have network access: resume the download.
         // if it finishes with error, but has downloaded data, and we do not have network access: save the task (and data) to retry later
         if let realError = error {
-            if let downloadedData = error.userInfo.objectForKey(NSURLSessionDownloadTaskResumeData) as? NSData {
+            if let downloadedData = error.userInfo[NSURLSessionDownloadTaskResumeData] as? NSData {
                 if (NetworkStatus.NotReachable != Reachability.reachabilityForInternetConnection().currentReachabilityStatus()) {
                     sharedURLSession.downloadTaskWithResumeData(downloadedData)
                 } else {

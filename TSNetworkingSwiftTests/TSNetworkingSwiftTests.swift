@@ -68,7 +68,7 @@ class TSNetworkingSwiftTests: XCTestCase {
             testFinished.fulfill()
         }
         TSNWManager.setBaseURLString(kNoAuthNeeded)
-        let task = TSNWManager.performDataTaskWithRelativePath(testPath, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWManager.performDataTask(relativePath: testPath, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
@@ -86,7 +86,11 @@ class TSNetworkingSwiftTests: XCTestCase {
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var requestHeaders = request.allHTTPHeaderFields
-            XCTAssertTrue(requestHeaders.valueForKey("Content-Type").isEqualToString("application/json"), "Content-Type header missing")
+            if let contentType: AnyObject = requestHeaders["Content-Type"] {
+                XCTAssertTrue(contentType as NSString == "application/json", "Content-Type header missing")
+            } else {
+                XCTFail("content-type missing")
+            }
             testFinished.fulfill()
         }
         
@@ -98,7 +102,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
         TSNWManager.setBaseURLString(kNoAuthNeeded)
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, additionalHeaders: additionalHeaders)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, additionalHeaders: additionalHeaders)
         
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
@@ -116,7 +120,11 @@ class TSNetworkingSwiftTests: XCTestCase {
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
             var requestHeaders = request.allHTTPHeaderFields
-            XCTAssertTrue(requestHeaders.valueForKey("Accept").isEqualToString("application/json"), "Accept header missing")
+            if let contentType: AnyObject = requestHeaders["accept"] {
+                XCTAssertTrue(contentType as NSString == "application/json", "Accept header missing")
+            } else {
+                XCTFail("Accept header missing")
+            }
             TSNWManager.removeAllSessionHeaders()
             testFinished.fulfill()
         }
@@ -130,7 +138,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         TSNWManager.setBaseURLString(kNoAuthNeeded)
         TSNWManager.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
         
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -159,7 +167,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWManager.setBaseURLString(kNoAuthNeeded)
         
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -184,7 +192,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         TSNWManager.setBaseURLString(kAuthNeeded)
         TSNWManager.setBasicAuth("hack", pass: "thegibson")
         
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -207,8 +215,8 @@ class TSNetworkingSwiftTests: XCTestCase {
         }
         TSNWManager.setBaseURLString(kAuthNeeded)
         TSNWManager.setBasicAuth("hack", pass: "thegibsonWRONG")
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        NSLog("\(task.originalRequest.allHTTPHeaderFields)")
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -233,7 +241,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         }
         TSNWManager.setBaseURLString(kJSON)
         
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -266,7 +274,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWManager.setBaseURLString(kNoAuthNeeded)
         
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -312,10 +320,13 @@ class TSNetworkingSwiftTests: XCTestCase {
         TSNWManager.setBaseURLString(kNoAuthNeeded)
         TSNWManager.bodyFormatter = TSNBodyFormatterJSON()
         
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
-        var value = task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String
-        XCTAssertTrue(value.bridgeToObjectiveC().containsString("application/json"), "the default JSON content type was not set")
+        if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields["Content-Type"] {
+            XCTAssertTrue(contentType as String == "application/json; charset=utf-8", "content-type not set correctly")
+        } else {
+            XCTFail("content type header missing")
+        }
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -337,7 +348,7 @@ class TSNetworkingSwiftTests: XCTestCase {
             var error: NSError?
             let parsedXML: AnyObject = NSPropertyListSerialization.propertyListWithData(bodyData, options: 0, format: nil, error: &error)
             
-            XCTAssertNotNil(parsedXML, "Request body was not valid JSON")
+            XCTAssertNotNil(parsedXML, "Request body was not valid XML")
             if let realError = error {
                 XCTFail("Parse error: \(realError.localizedDescription)")
             }
@@ -359,11 +370,15 @@ class TSNetworkingSwiftTests: XCTestCase {
         var additionalParams = NSDictionary(object: "value", forKey: "key")
         TSNWManager.setBaseURLString(kNoAuthNeeded)
         TSNWManager.bodyFormatter = TSNBodyFormatterPListXML() // change the default body formatter
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
-        var value = task.originalRequest.allHTTPHeaderFields.objectForKey("Content-Type") as String
-        XCTAssertTrue(value.bridgeToObjectiveC().containsString("application/x-plist"), "the default x-plist content type was not set")
+        if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields["Content-Type"] {
+            XCTAssertTrue(contentType as String == "application/x-plist; charset=utf-8", "content-type not set correctly")
+        } else {
+            XCTFail("content type header missing")
+        }
+        
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -395,9 +410,9 @@ class TSNetworkingSwiftTests: XCTestCase {
         TSNWManager.setBaseURLString(kNoAuthNeeded)
         TSNWManager.bodyFormatter = TSNBodyFormatterManual(block: {() -> NSData in
             var string = "some crazy\nnew line\nstring with no \npattern\nat all"
-            return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+            return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!
         })
-        let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
@@ -441,7 +456,7 @@ class TSNetworkingSwiftTests: XCTestCase {
             NSLog("Download written: \(bytesWritten), TotalBytesWritten: \(totalBytesWritten), expectedToWrite: \(totalBytesExpectedToWrite)")
         }
         
-        let task = TSNWManager.downloadFromFullURL(remoteGabe, destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        let task = TSNWManager.download(fullSourceURL: remoteGabe, destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         XCTAssertNotNil(task, "The download task was nil")
         XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
         waitForExpectationsWithTimeout(20, handler: nil)
@@ -475,7 +490,7 @@ class TSNetworkingSwiftTests: XCTestCase {
             NSLog("Download written: \(bytesWritten), TotalBytesWritten: \(totalBytesWritten), expectedToWrite: \(totalBytesExpectedToWrite)")
         }
         
-        let task = TSNWManager.downloadFromFullURL("http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        let task = TSNWManager.download(fullSourceURL: "http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         XCTAssertNotNil(task, "The download task was nil")
         XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
         
@@ -521,7 +536,7 @@ class TSNetworkingSwiftTests: XCTestCase {
             }
         }
         
-        let task = TSNWManager.downloadFromFullURL(remoteGabe, destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock)
+        let task = TSNWManager.download(fullSourceURL: remoteGabe, destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
         TSNWManager.addDownloadProgressBlock(progressBlock, task: task)
         
@@ -533,9 +548,8 @@ class TSNetworkingSwiftTests: XCTestCase {
     */
 
     /*
-    * As an upload in background task I should have a state of "Running" after I am created
-    * I should be able to upload from a string based source location.
-    * I should have a state of "Running" after I am created
+    * As an upload task I should have a state of "Running" after I am created
+    * I should be able to upload from an NSURL source location.
     * Unfortunately I cant find a way to simulate minimizing or exiting the app and having the download task finish as expected
     */
     func testuploadSourceURL() {
@@ -562,7 +576,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
         let sourceURL = NSURL.fileURLWithPath(sourcePath)
         
-        let task = TSNWManager.uploadSourceURL(sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        let task = TSNWManager.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
         
         
@@ -570,8 +584,8 @@ class TSNetworkingSwiftTests: XCTestCase {
     }
     
     /*
-    * As an upload in background task that will be cancelled should have a state of "Running" after I am created
-    * I should be able to upload from a string based location
+    * As an upload task that will be cancelled I should have a state of "Running" after I am created
+    * I should be able to upload from an NSURL source location
     * I should not reach the successBlock
     * I should reach the errorBlock, and the error's code should tell me that the task was cancelled by user
     */
@@ -602,14 +616,14 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
         let sourceURL = NSURL.fileURLWithPath(sourcePath)
         
-        let task = TSNWManager.uploadSourceURL(sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        let task = TSNWManager.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         task.cancel()
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
     
     /*
-    * As an upload in background task that will have a progress block added to me after I am running I should see that the progress block is executed
+    * As an upload task that will have a progress block added to me after I am running I should see that the progress block is executed
     */
     func testAddUploadSourceURLProgressBlock() {
         
@@ -642,7 +656,7 @@ class TSNetworkingSwiftTests: XCTestCase {
         
         let sourceURL = NSURL.fileURLWithPath(sourcePath)
         
-        let task = TSNWManager.uploadSourceURL(sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        let task = TSNWManager.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         TSNWManager.addUploadProgressBlock(progressBlock, task: task)
         
         waitForExpectationsWithTimeout(10, handler: nil)
@@ -672,12 +686,10 @@ class TSNetworkingSwiftTests: XCTestCase {
         XCTAssertNotNil(data, "data was nil")        
         var formDataFile = MultipartFormFile(formKeyName: "image", fileName: "ourlord.jpg", data: data, mimetype: "image/jpeg")
         var formDataFile2 = MultipartFormFile(formKeyName: "image2", fileName: "ourlord2.jpg", data: data, mimetype: "image/jpeg")
-        var arrayOfFiles = MultipartFormFile[]()
-        arrayOfFiles.append(formDataFile)
-        arrayOfFiles.append(formDataFile2)
+        var arrayOfFiles = [formDataFile, formDataFile2]
         
         TSNWManager.setBaseURLString(kMultipartUpload)
-        let uploadTask = TSNWManager.multipartFormPost(nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)
+        let uploadTask = TSNWManager.multipartFormPost(relativePath: nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)
         waitForExpectationsWithTimeout(10, handler: nil)
     }
 

@@ -66,7 +66,7 @@ Warning for new players: never directly reference self inside a block, use this 
 
 ## Optionals in the various methods
 
-	func performDataTaskWithRelativePath(relativePath: NSString?,
+	func performDataTask(#relativePath: NSString?,
         method: HTTP_METHOD,
         successBlock: TSNWSuccessBlock? = nil,
         errorBlock: TSNWErrorBlock? = nil,
@@ -75,11 +75,11 @@ Warning for new players: never directly reference self inside a block, use this 
 
     i.e.
 
-    let task = TSNWManager.performDataTaskWithRelativePath(testPath, method: .GET) //or 
-    let task = TSNWManager.performDataTaskWithRelativePath(testPath, method: .GET, successBlock: someSuccessBlock) // or 
-    let task = TSNWManager.performDataTaskWithRelativePath(testPath, method: .GET, successBlock: someSuccessBlock, errorBlock: someErrorBlock) // or
-    let task = TSNWManager.performDataTaskWithRelativePath(testPath, method: .GET, successBlock: someSuccessBlock, errorBlock: someErrorBlock, parameters: someDictionary) //or 
-    let task = TSNWManager.performDataTaskWithRelativePath(testPath, method: .GET, successBlock: someSuccessBlock, errorBlock: someErrorBlock, parameters: someDictionary, additionalHeaders = someHeadersDictionary) 
+    let task = TSNWManager.performDataTask(relativePath: testPath, method: .GET) //or 
+    let task = TSNWManager.performDataTask(relativePath: testPath, method: .GET, successBlock: someSuccessBlock) // or 
+    let task = TSNWManager.performDataTask(relativePath: testPath, method: .GET, successBlock: someSuccessBlock, errorBlock: someErrorBlock) // or
+    let task = TSNWManager.performDataTask(relativePath: testPath, method: .GET, successBlock: someSuccessBlock, errorBlock: someErrorBlock, parameters: someDictionary) //or 
+    let task = TSNWManager.performDataTask(relativePath: testPath, method: .GET, successBlock: someSuccessBlock, errorBlock: someErrorBlock, parameters: someDictionary, additionalHeaders = someHeadersDictionary) 
 
 ## GET
 
@@ -94,7 +94,7 @@ Warning for new players: never directly reference self inside a block, use this 
 
     let additionalParams = NSDictionary(object: "value", forKey: "key")
 
-    let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
+    let task = TSNWManager.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
 
 ## POST
 
@@ -102,13 +102,13 @@ Warning for new players: never directly reference self inside a block, use this 
 
 	let additionalParams = NSDictionary(object: "value", forKey: "key")
 	TSNWManager.bodyFormatter = TSNBodyFormatterJSON() // it's TSNBodyFormatterJSON by default, FYI
-    let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, parameters: additionalParams)
+    let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, parameters: additionalParams)
 
 #### POST some XML-PLIST
 
 	let additionalParams = NSDictionary(object: "value", forKey: "key")
 	TSNWManager.bodyFormatter = TSNBodyFormatterPListXML()
-    let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, parameters: additionalParams)
+    let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, parameters: additionalParams)
 
 #### POST some custom data
 
@@ -117,7 +117,7 @@ Warning for new players: never directly reference self inside a block, use this 
         return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
     })
     let additionalHeaders = NSDictionary(object: "text/WTF", forKey: "Content-Type")
-    let task = TSNWManager.performDataTaskWithRelativePath(nil, method: .POST, additionalHeaders: additionalHeaders)
+    let task = TSNWManager.performDataTask(relativePath: nil, method: .POST, additionalHeaders: additionalHeaders)
 
 ## Download
 
@@ -140,7 +140,7 @@ Note: the progressBlock is explicitly executed on the main thread. You don't nee
         NSLog("Download written: \(bytesWritten), TotalBytesWritten: \(totalBytesWritten), expectedToWrite: \(totalBytesExpectedToWrite)")
     }
     
-    let task = TSNWManager.downloadFromFullURL("http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+    let task = TSNWManager.download(fullSourceURL: "http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
 
 ## Upload
 
@@ -167,7 +167,7 @@ Note: the progressBlock is explicitly executed on the main thread. You don't nee
     XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
     let sourceURL = NSURL.fileURLWithPath(sourcePath)
     
-    let task = TSNWManager.uploadSourceURL(sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+    let task = TSNWManager.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
 
 ## Multipart Form 
 
@@ -181,4 +181,4 @@ Note: the progressBlock is explicitly executed on the main thread. You don't nee
     let params = NSMutableDictionary(object: "value", forKey: "key")
     params.setValue("anotherValue", forKey: "anotherKey")
     
-    let uploadTask = TSNWManager.multipartFormPost(nil, parameters: params, multipartFormFiles: arrayOfFiles)
+    let uploadTask = TSNWManager.multipartFormPost(relativePath: nil, parameters: params, multipartFormFiles: arrayOfFiles)
