@@ -8,6 +8,22 @@
 
 import XCTest
 
+// HEY LOOK AT THIS 
+/*
+If you want these tests to work you need to install node.js on your machine and have the all .js files running before Testing this code. The .js files are located in the TSNetworkingSwiftTests folder.
+
+install instruction found at http://nodejs.org/
+once node is installed, you need node package manager (npm). Pretty sure it comes with node.js
+You need the node library `multiparty`, install with "npm install multiparty"
+
+after the package is installed do this in a few terminal windows
+
+node TSNetworkingSwiftTests/auth.node.js
+node TSNetworkingSwiftTests/multipart.node.js
+node TSNetworkingSwiftTests/noauth.js
+node TSNetworkingSwiftTests/json.js
+*/
+
 let kNoAuthNeeded = "http://localhost:8081";
 let kAuthNeeded = "http://localhost:8080";
 let kJSON = "http://localhost:8083";
