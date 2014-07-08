@@ -101,18 +101,18 @@ Warning for new players: never directly reference self inside a block, use this 
 #### POST some JSON
 
 	let additionalParams = NSDictionary(object: "value", forKey: "key")
-	Network.bodyFormatter = TSNBodyFormatterJSON() // it's TSNBodyFormatterJSON by default, FYI
+	Network.bodyFormatter = BodyFormatterJSON() // it's BodyFormatterJSON by default, FYI
     let task = Network.performDataTask(relativePath: nil, method: .POST, parameters: additionalParams)
 
 #### POST some XML-PLIST
 
 	let additionalParams = NSDictionary(object: "value", forKey: "key")
-	Network.bodyFormatter = TSNBodyFormatterPListXML()
+	Network.bodyFormatter = BodyFormatterPListXML()
     let task = Network.performDataTask(relativePath: nil, method: .POST, parameters: additionalParams)
 
 #### POST some custom data
 
-	Network.bodyFormatter = TSNBodyFormatterManual(block: {() -> NSData in
+	Network.bodyFormatter = BodyFormatterManual(block: {() -> NSData in
         var string = "some crazy\nnew line\nstring with no \npattern\nat all"
         return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
     })
