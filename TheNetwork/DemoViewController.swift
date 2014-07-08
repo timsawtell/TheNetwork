@@ -24,7 +24,7 @@ class DemoViewController: UIViewController {
         button.setTitle("downloading ...", forState: .Normal)
         
         weak var weakSelf = self
-        let successBlock: TSNWSuccessBlock = { (resultObject, request, response) in
+        let successBlock: NetworkSuccessBlock = { (resultObject, request, response) in
             if let url = resultObject as? NSURL {
                 NSLog("Finished downloading to \(url.path)")
             } else {
@@ -37,7 +37,7 @@ class DemoViewController: UIViewController {
             }
         }
         
-        let errorBlock: TSNWErrorBlock = { (resultObject, error, request, response) in
+        let errorBlock: NetworkErrorBlock = { (resultObject, error, request, response) in
             NSLog("Uh oh things didn't work out: \(error.localizedDescription)")
             button.userInteractionEnabled = true
             button.setTitle("Download", forState: .Normal)
@@ -46,7 +46,7 @@ class DemoViewController: UIViewController {
             }
         }
         
-        let progressBlock: TSNWDownloadProgressBlock = { (bytesWritten, totalBytesWritten, totalBytesExpectedToWrite) in
+        let progressBlock: NetworkDownloadProgressBlock = { (bytesWritten, totalBytesWritten, totalBytesExpectedToWrite) in
             let hBytesWritten = NSByteCountFormatter.stringFromByteCount(bytesWritten, countStyle: .File)
             let hTotalWritten = NSByteCountFormatter.stringFromByteCount(totalBytesWritten, countStyle: .File)
             let hTotalToWrite = NSByteCountFormatter.stringFromByteCount(totalBytesExpectedToWrite, countStyle: .File)
@@ -61,7 +61,7 @@ class DemoViewController: UIViewController {
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("10MB.zip")
         let dlFile = "http://ipv4.download.thinkbroadband.com/10MB.zip"
         
-        TSNWManager.download(fullSourceURL: dlFile, destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
+        Network.download(fullSourceURL: dlFile, destinationPathString: destinationPath, additionalHeaders: nil, progressBlock: progressBlock, successBlock: successBlock, errorBlock: errorBlock)
     }
     
 }

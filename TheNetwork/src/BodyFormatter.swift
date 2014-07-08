@@ -8,11 +8,11 @@
 
 import Foundation
 
-protocol TSNBodyFormatter {
+protocol BodyFormatter {
     func formatData(usingParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError?
 }
 
-class TSNBodyFormatterJSON: TSNBodyFormatter {
+class BodyFormatterJSON: BodyFormatter {
     func formatData(userParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError? {
         var error: NSError?
         if let jsonData = NSJSONSerialization.dataWithJSONObject(userParameters, options: NSJSONWritingOptions.PrettyPrinted, error: &error) {
@@ -28,7 +28,7 @@ class TSNBodyFormatterJSON: TSNBodyFormatter {
     }
 }
 
-class TSNBodyFormatterPListXML: TSNBodyFormatter {
+class BodyFormatterPListXML: BodyFormatter {
     func formatData(userParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError? {
         var error: NSError?
         if let plistData = NSPropertyListSerialization.dataWithPropertyList(userParameters, format: NSPropertyListFormat.XMLFormat_v1_0, options:0, error: &error) {
@@ -44,12 +44,12 @@ class TSNBodyFormatterPListXML: TSNBodyFormatter {
     }
 }
 
-typealias TSManualBodyDataBlock = () -> NSData
+typealias ManualBodyDataBlock = () -> NSData
 
-class TSNBodyFormatterManual: TSNBodyFormatter {
-    var manualDataBlock: TSManualBodyDataBlock?
+class BodyFormatterManual: BodyFormatter {
+    var manualDataBlock: ManualBodyDataBlock?
     
-    init(block: TSManualBodyDataBlock) {
+    init(block: ManualBodyDataBlock) {
         manualDataBlock = block
     }
     

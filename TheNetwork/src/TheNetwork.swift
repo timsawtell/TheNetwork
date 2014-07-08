@@ -8,20 +8,20 @@
 import Foundation
 import UIKit
 
-typealias TSNWSuccessBlock = (resultObject: AnyObject?, request: NSURLRequest, response: NSURLResponse?) -> Void
-typealias TSNWErrorBlock = (resultObject: AnyObject?, error: NSError, request: NSURLRequest?, response: NSURLResponse?) -> Void
-typealias TSNWDownloadProgressBlock = (bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) -> Void
-typealias TSNWUploadProgressBlock = (bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) -> Void
+typealias NetworkSuccessBlock = (resultObject: AnyObject?, request: NSURLRequest, response: NSURLResponse?) -> Void
+typealias NetworkErrorBlock = (resultObject: AnyObject?, error: NSError, request: NSURLRequest?, response: NSURLResponse?) -> Void
+typealias NetworkDownloadProgressBlock = (bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) -> Void
+typealias NetworkUploadProgressBlock = (bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) -> Void
 typealias URLSessionTaskCompletion = (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void
 typealias URLSessionDownloadTaskCompletion = (location: NSURL!, error: NSError!) -> Void
 typealias SessionCompletionHandler = (() -> Void)!
 
 class BlockHolder {
-    // because I can't add a declared instances of the typealias closures (TSNWSuccessBlock et al) to a dictionary, I have to wrap them up. Ugly as sin. Need to find a better way.
-    var successBlock: TSNWSuccessBlock?                             // programmer defined success completion block
-    var errorBlock: TSNWErrorBlock?                                 // programmer defined error block
-    var downloadProgressBlock: TSNWDownloadProgressBlock?           // for downloads
-    var uploadProgressBlock: TSNWUploadProgressBlock?               // for uploads
+    // because I can't add a declared instances of the typealias closures (NetworkSuccessBlock et al) to a dictionary, I have to wrap them up. Ugly as sin. Need to find a better way.
+    var successBlock: NetworkSuccessBlock?                             // programmer defined success completion block
+    var errorBlock: NetworkErrorBlock?                                 // programmer defined error block
+    var downloadProgressBlock: NetworkDownloadProgressBlock?           // for downloads
+    var uploadProgressBlock: NetworkUploadProgressBlock?               // for uploads
     var downloadCompletionBlock: URLSessionDownloadTaskCompletion?  // for downloads
     var uploadCompletedBlock: URLSessionTaskCompletion?             // for uploads
     var dataTaskData: NSMutableData?                                // for gets/posts/puts etc
@@ -58,9 +58,9 @@ extension String {
     }
 }
 
-let TSNWManager = TSNetworking()
+let Network = TheNetwork()
 
-class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, NSURLSessionDataDelegate {
+class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, NSURLSessionDataDelegate {
     
     // to be marked private when Swift has access modifiers ...
     var baseURL: NSURL = NSURL.URLWithString("")
@@ -79,13 +79,13 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     var activeTasks = 0
     var sessionCompletionHandler: SessionCompletionHandler
     var securityPolicy: AFSecurityPolicy
-    var bodyFormatter: TSNBodyFormatter
+    var bodyFormatter: BodyFormatter
     
     init() {
         defaultConfiguration = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier("au.com.sawtellsoftware.tsnetworking")
         acceptableStatusCodes = NSIndexSet(indexesInRange: NSMakeRange(200, 100))
         securityPolicy = AFSecurityPolicy.defaultPolicy()
-        bodyFormatter = TSNBodyFormatterJSON()
+        bodyFormatter = BodyFormatterJSON()
         super.init()
         defaultConfiguration.allowsCellularAccess = true
         defaultConfiguration.timeoutIntervalForRequest = 30
@@ -141,14 +141,14 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     }
     
     func taskCompletionBlockForRequest(request: NSMutableURLRequest,
-        successBlock: TSNWSuccessBlock? = nil,
-        errorBlock: TSNWErrorBlock? = nil) -> URLSessionTaskCompletion {
+        successBlock: NetworkSuccessBlock? = nil,
+        errorBlock: NetworkErrorBlock? = nil) -> URLSessionTaskCompletion {
             
         weak var weakSelf = self
         var completionBlock: URLSessionTaskCompletion = { (data: NSData!, response: NSURLResponse!, error: NSError!) -> Void in
             if let strongSelf = weakSelf {
                 strongSelf.activeTasks = max(strongSelf.activeTasks - 1, 0)
-                if TSNWManager.activeTasks == 0 {
+                if Network.activeTasks == 0 {
                     if let sharedApp = UIApplication.sharedApplication() {
                         sharedApp.networkActivityIndicatorVisible = false
                     }
@@ -280,7 +280,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         sessionHeaders = NSMutableDictionary()
     }
     
-    func addDownloadProgressBlock(progressBlock: TSNWDownloadProgressBlock, task: NSURLSessionTask) {
+    func addDownloadProgressBlock(progressBlock: NetworkDownloadProgressBlock, task: NSURLSessionTask) {
         switch task.state {
         case .Running, .Suspended:
             var holder = BlockHolder()
@@ -292,7 +292,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         }
     }
     
-    func addUploadProgressBlock(progressBlock: TSNWUploadProgressBlock, task: NSURLSessionTask) {
+    func addUploadProgressBlock(progressBlock: NetworkUploadProgressBlock, task: NSURLSessionTask) {
         if NSURLSessionTaskState.Running == task.state {
             var holder = BlockHolder()
             holder.uploadProgressBlock = progressBlock
@@ -311,7 +311,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
             
             if task.taskIdentifier === keyVal.key {
                 activeTasks = max(activeTasks - 1, 0)
-                if (TSNWManager.activeTasks == 0 ) {
+                if (Network.activeTasks == 0 ) {
                     if let sharedApp = UIApplication.sharedApplication() {
                         sharedApp.networkActivityIndicatorVisible = false
                     }
@@ -326,8 +326,8 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     func performDataTask(#relativePath: NSString?,
         method: HTTP_METHOD,
-        successBlock: TSNWSuccessBlock? = nil,
-        errorBlock: TSNWErrorBlock? = nil,
+        successBlock: NetworkSuccessBlock? = nil,
+        errorBlock: NetworkErrorBlock? = nil,
         parameters: NSDictionary? = nil,
         additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
             
@@ -382,9 +382,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     func download(#fullSourceURL: NSString,
         destinationPathString: NSString,
-        successBlock: TSNWSuccessBlock? = nil,
-        errorBlock: TSNWErrorBlock? = nil,
-        progressBlock: TSNWDownloadProgressBlock? = nil,
+        successBlock: NetworkSuccessBlock? = nil,
+        errorBlock: NetworkErrorBlock? = nil,
+        progressBlock: NetworkDownloadProgressBlock? = nil,
         additionalHeaders: NSDictionary? = nil) -> NSURLSessionDownloadTask {
             
         var request = NSMutableURLRequest(URL: NSURL(string: fullSourceURL.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)))
@@ -395,7 +395,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
         var completionBlock: URLSessionDownloadTaskCompletion = { (location: NSURL!, error: NSError!) -> Void in
             if let strongSelf = weakSelf {
                 strongSelf.activeTasks = max(strongSelf.activeTasks - 1, 0)
-                if TSNWManager.activeTasks == 0 {
+                if Network.activeTasks == 0 {
                     if let sharedApp = UIApplication.sharedApplication() {
                         sharedApp.networkActivityIndicatorVisible = false
                     }
@@ -485,9 +485,9 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     func upload(#sourceURL: NSURL,
         destinationFullURLString: NSString,
-        successBlock: TSNWSuccessBlock? = nil,
-        errorBlock: TSNWErrorBlock? = nil,
-        progressBlock: TSNWUploadProgressBlock? = nil,
+        successBlock: NetworkSuccessBlock? = nil,
+        errorBlock: NetworkErrorBlock? = nil,
+        progressBlock: NetworkUploadProgressBlock? = nil,
         additionalHeaders: NSDictionary? = nil) -> NSURLSessionUploadTask {
         
         var fm = NSFileManager()
@@ -523,8 +523,8 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     func multipartFormPost(#relativePath: NSString?,
         parameters: NSDictionary? = nil,
         multipartFormFiles: [MultipartFormFile]? = nil,
-        successBlock: TSNWSuccessBlock? = nil,
-        errorBlock: TSNWErrorBlock? = nil,
+        successBlock: NetworkSuccessBlock? = nil,
+        errorBlock: NetworkErrorBlock? = nil,
         additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
         
         var requestURL = baseURL
@@ -619,7 +619,7 @@ class TSNetworking: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NS
     
     func URLSession(session: NSURLSession!, task: NSURLSessionTask!, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         if let blockHolder: BlockHolder = uploadProgressBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
-            if let progress: TSNWUploadProgressBlock = blockHolder.uploadProgressBlock {
+            if let progress: NetworkUploadProgressBlock = blockHolder.uploadProgressBlock {
                 dispatch_async(dispatch_get_main_queue(), {
                     progress(bytesSent: bytesSent, totalBytesSent: totalBytesSent, totalBytesExpectedToSend: totalBytesExpectedToSend)
                     })
