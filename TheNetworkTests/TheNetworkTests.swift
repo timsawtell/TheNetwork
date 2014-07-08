@@ -29,6 +29,7 @@ node TheNetworkTests/node/json.node.js
 let kNoAuthNeeded = "http://localhost:8081";
 let kAuthNeeded = "http://localhost:8080";
 let kJSON = "http://localhost:8083";
+let kXML = "http://localhost:8084";
 let kMultipartUpload = "http://localhost:8082/upload";
 let remoteGabe = "http://images.dailytech.com/nimage/gabe_newell.jpeg"
 
@@ -233,6 +234,12 @@ class TheNetworkTests: XCTestCase {
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject?.isKindOfClass(NSDictionary.self), "result was not a dictionary")
+            let dict = resultObject as Dictionary<String, String>
+            if let value = dict["key"] {
+                XCTAssertTrue(value as NSString == "value", "Incorrect dictionary contents")
+            } else {
+                XCTFail("Incorrect dictionary contents")
+            }
             testFinished.fulfill()
         }
         
@@ -242,6 +249,37 @@ class TheNetworkTests: XCTestCase {
             testFinished.fulfill()
         }
         Network.setBaseURLString(kJSON)
+        
+        let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        waitForExpectationsWithTimeout(4, handler: nil)
+    }
+    
+    /*
+    * As a GET REQUEST with hitting an XML based API I should have a HTTPMethod of "GET"
+    * I should receive a dictionary as the response which contains the parsed XML from the server
+    */
+    func testGetXML() {
+        
+        var testFinished = expectationWithDescription("test finished")
+        let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
+            XCTAssertNotNil(resultObject, "nil result obj")
+            XCTAssertTrue(resultObject?.isKindOfClass(NSDictionary.self), "result was not a dictionary")
+            let dict = resultObject as Dictionary<String, String>
+            if let value = dict["key"] {
+                XCTAssertTrue(value as NSString == "value", "Incorrect dictionary contents")
+            } else {
+                XCTFail("Incorrect dictionary contents")
+            }
+            testFinished.fulfill()
+        }
+        
+        let errorBlock: NetworkErrorBlock = { (resultObject, error, request, response) -> Void in
+            XCTAssertNotNil(error, "error not nil, it was \(error.localizedDescription)")
+            XCTFail("in the error block, error was: \(error.localizedDescription)")
+            testFinished.fulfill()
+        }
+        Network.setBaseURLString(kXML)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")

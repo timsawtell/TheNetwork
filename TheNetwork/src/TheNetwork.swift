@@ -215,8 +215,14 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         var parseError: NSError?
         if firstComponent == "application" {
             if secondComponent.containsString("json") {
-                var parsedJSON: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: .MutableContainers, error: &parseError)
-                return parsedJSON
+                if let parsedJSON: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: .MutableContainers, error: &parseError) {
+                    return parsedJSON
+                }
+            } else if secondComponent.containsString("x-plist") {
+                var format: NSPropertyListFormat?
+                if let parsedXML: AnyObject = NSPropertyListSerialization.propertyListWithData(data, options: 0, format: nil, error: &parseError) {
+                    return parsedXML
+                }
             }
         } else if firstComponent == "text" {
             var parsedString = NSString(data: data, encoding: encoding)

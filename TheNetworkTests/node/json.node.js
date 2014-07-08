@@ -8,7 +8,7 @@ util = require('util');
 
 var server = http.createServer(function(req, res) {
     res.writeHead(200, {'content-type': 'application/JSON; charset=ISO-8859-1'});
-    res.end('{ "item": { "subitem": "some value", } }');
+    res.end('{ "key": "value" }');
 });
 
 
