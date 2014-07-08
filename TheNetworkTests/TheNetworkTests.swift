@@ -192,7 +192,7 @@ class TheNetworkTests: XCTestCase {
             testFinished.fulfill()
         }
         Network.setBaseURLString(kAuthNeeded)
-        Network.setBasicAuth("hack", pass: "thegibson")
+        Network.setBasicAuth(user: "hack", pass: "thegibson")
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
@@ -216,7 +216,7 @@ class TheNetworkTests: XCTestCase {
             testFinished.fulfill()
         }
         Network.setBaseURLString(kAuthNeeded)
-        Network.setBasicAuth("hack", pass: "thegibsonWRONG")
+        Network.setBasicAuth(user: "hack", pass: "thegibsonWRONG")
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         NSLog("\(task.originalRequest.allHTTPHeaderFields)")
         XCTAssertEqual(task.originalRequest.HTTPMethod, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")

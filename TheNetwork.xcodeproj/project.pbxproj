@@ -214,9 +214,9 @@
 				2BEFC486194929CB00283325 /* Foundation.framework */,
 				2BEFC484194929C100283325 /* SystemConfiguration.framework */,
 				2B599B231947BD1E00A40C65 /* Security.framework */,
-				2B599AFB1947B92900A40C65 /* Products */,
 				2BA2A27E196B753A004F84B9 /* TheNetwork */,
 				2BA2A28E196B7554004F84B9 /* TheNetworkTests */,
+				2B599AFB1947B92900A40C65 /* Products */,
 			);
 			sourceTree = "<group>";
 		};

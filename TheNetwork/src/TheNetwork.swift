@@ -267,8 +267,8 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         baseURL = NSURL.URLWithString(baseURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding))
     }
     
-    func setBasicAuth(name: NSString, pass: NSString) {
-        username = name
+    func setBasicAuth(#user: NSString, pass: NSString) {
+        username = user
         password = pass
     }
     

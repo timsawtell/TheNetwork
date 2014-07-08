@@ -29,7 +29,7 @@ Be sure to add this to you AppDelegate. It will ensure that your uploads/downloa
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: NSDictionary?) -> Bool {
         Network.setBaseURLString("http://en.wikipedia.org/wiki/Gabe_Newell")
-        Network.setBasicAuth("username", pass: "password") // will add the Authorization header to every request
+        Network.setBasicAuth(user:"username", pass: "password") // will add the Authorization header to every request
         var sessionHeaders = NSDictionary(object: "yes, yes it does", forKey: "does your API require superluous header values?")
         Network.addSessionHeaders(sessionHeaders)
         return true
