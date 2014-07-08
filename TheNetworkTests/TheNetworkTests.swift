@@ -24,6 +24,7 @@ node TheNetworkTests/node/auth.node.js
 node TheNetworkTests/node/multipart.node.js
 node TheNetworkTests/node/noauth.node.js
 node TheNetworkTests/node/json.node.js
+node TheNetworkTests/node/xml.node.js
 */
 
 let kNoAuthNeeded = "http://localhost:8081";
