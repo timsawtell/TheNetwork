@@ -8,6 +8,6 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '8.0'
   s.ios.deployment_target = '8.0'
   s.source       = { :git => 'https://github.com/timsawtell/TheNetwork.git', :tag => '0.0.2' }
-  s.source_files = 'TheNetwork/src/**'
+  s.source_files = 'TheNetwork/src/**/*'
   s.requires_arc = true
 end
