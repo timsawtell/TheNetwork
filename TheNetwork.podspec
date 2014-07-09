@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'TheNetwork'
-  s.version      = '0.0.1'
+  s.version      = '0.0.2'
   s.summary      = 'An iOS8+ networking API based on NSURLSession, written in Swift'
   s.homepage     = 'https://github.com/timsawtell/TheNetwork'
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
