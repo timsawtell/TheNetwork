@@ -202,7 +202,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
     }
     
     func resultBasedOnContentType(contentType: NSString, encoding: NSStringEncoding, data: NSData?) -> AnyObject {
-       
+        
         var firstComponent = NSString(), secondComponent = NSString()
         var indexOfSlash: Int = contentType.rangeOfString("/").location
         if indexOfSlash > 0 && indexOfSlash < contentType.length - 1 {
@@ -213,22 +213,19 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         }
         
         var parseError: NSError?
-        if firstComponent == "application" {
-            if secondComponent.containsString("json") {
-                if let parsedJSON: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: .MutableContainers, error: &parseError) {
-                    return parsedJSON
-                }
-            } else if secondComponent.containsString("x-plist") {
-                var format: NSPropertyListFormat?
-                if let parsedXML: AnyObject = NSPropertyListSerialization.propertyListWithData(data, options: 0, format: nil, error: &parseError) {
-                    return parsedXML
-                }
+        if secondComponent.containsString("json") || secondComponent.containsString("javascript") {
+            if let parsedJSON: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: .MutableContainers, error: &parseError) {
+                return parsedJSON
             }
-        } else if firstComponent == "text" {
-            var parsedString = NSString(data: data, encoding: encoding)
-            return parsedString
+        } else if secondComponent.containsString("x-plist") {
+            var format: NSPropertyListFormat?
+            if let parsedXML: AnyObject = NSPropertyListSerialization.propertyListWithData(data, options: 0, format: nil, error: &parseError) {
+                return parsedXML
+            }
         }
-        return data!
+        
+        var parsedString = NSString(data: data, encoding: encoding)
+        return parsedString
     }
     
     func validateResponse(response: NSURLResponse?) -> NSError? {
