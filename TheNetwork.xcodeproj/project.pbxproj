@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B130E83196CF1B9001207EF /* AFSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B130E80196CF1B9001207EF /* AFSecurityPolicy.m */; };
+		2B130E84196CF1B9001207EF /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B130E82196CF1B9001207EF /* Reachability.m */; };
 		2B599B241947BD1E00A40C65 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B599B231947BD1E00A40C65 /* Security.framework */; };
 		2BA2A287196B753A004F84B9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A27F196B753A004F84B9 /* AppDelegate.swift */; };
 		2BA2A289196B753A004F84B9 /* DemoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A281196B753A004F84B9 /* DemoViewController.swift */; };
@@ -18,10 +20,6 @@
 		2BA2A395196B76EB004F84B9 /* BodyFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A38D196B7628004F84B9 /* BodyFormatter.swift */; };
 		2BA2A396196B76EB004F84B9 /* TheNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A38E196B7628004F84B9 /* TheNetwork.swift */; };
 		2BA2A397196B7793004F84B9 /* ourLord.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2BA2A31D196B7554004F84B9 /* ourLord.jpg */; };
-		2BA2A3A5196B79FA004F84B9 /* AFSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A39D196B79FA004F84B9 /* AFSecurityPolicy.m */; };
-		2BA2A3A9196B79FA004F84B9 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A3A3196B79FA004F84B9 /* Reachability.m */; };
-		2BA2A3B3196B7ABB004F84B9 /* AFSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A39D196B79FA004F84B9 /* AFSecurityPolicy.m */; };
-		2BA2A3B4196B7ABB004F84B9 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BA2A3A3196B79FA004F84B9 /* Reachability.m */; };
 		2BB592E71957A1F600615074 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BB592E61957A1F600615074 /* UIKit.framework */; };
 		2BEFC485194929C100283325 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BEFC484194929C100283325 /* SystemConfiguration.framework */; };
 		2BEFC487194929CB00283325 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BEFC486194929CB00283325 /* Foundation.framework */; };
@@ -164,6 +162,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2B130E7F196CF1B9001207EF /* AFSecurityPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFSecurityPolicy.h; sourceTree = "<group>"; };
+		2B130E80196CF1B9001207EF /* AFSecurityPolicy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFSecurityPolicy.m; sourceTree = "<group>"; };
+		2B130E81196CF1B9001207EF /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		2B130E82196CF1B9001207EF /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		2B599AFA1947B92900A40C65 /* TheNetwork.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheNetwork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B599B071947B92900A40C65 /* TheNetworkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TheNetworkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B599B231947BD1E00A40C65 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
@@ -176,10 +178,6 @@
 		2BA2A38D196B7628004F84B9 /* BodyFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BodyFormatter.swift; sourceTree = "<group>"; };
 		2BA2A38E196B7628004F84B9 /* TheNetwork.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TheNetwork.swift; sourceTree = "<group>"; };
 		2BA2A398196B798F004F84B9 /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
-		2BA2A39C196B79FA004F84B9 /* AFSecurityPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFSecurityPolicy.h; sourceTree = "<group>"; };
-		2BA2A39D196B79FA004F84B9 /* AFSecurityPolicy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFSecurityPolicy.m; sourceTree = "<group>"; };
-		2BA2A3A2196B79FA004F84B9 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
-		2BA2A3A3196B79FA004F84B9 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		2BB592E61957A1F600615074 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		2BEFC484194929C100283325 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		2BEFC486194929CB00283325 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -253,47 +251,15 @@
 		2BA2A38C196B7628004F84B9 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				2BA2A399196B79FA004F84B9 /* External */,
+				2B130E7F196CF1B9001207EF /* AFSecurityPolicy.h */,
+				2B130E80196CF1B9001207EF /* AFSecurityPolicy.m */,
+				2B130E81196CF1B9001207EF /* Reachability.h */,
+				2B130E82196CF1B9001207EF /* Reachability.m */,
 				2BA2A398196B798F004F84B9 /* Bridge.h */,
 				2BA2A38D196B7628004F84B9 /* BodyFormatter.swift */,
 				2BA2A38E196B7628004F84B9 /* TheNetwork.swift */,
 			);
 			path = src;
-			sourceTree = "<group>";
-		};
-		2BA2A399196B79FA004F84B9 /* External */ = {
-			isa = PBXGroup;
-			children = (
-				2BA2A39A196B79FA004F84B9 /* AFNetworking */,
-				2BA2A3A0196B79FA004F84B9 /* Reachability */,
-			);
-			path = External;
-			sourceTree = "<group>";
-		};
-		2BA2A39A196B79FA004F84B9 /* AFNetworking */ = {
-			isa = PBXGroup;
-			children = (
-				2BA2A39B196B79FA004F84B9 /* AFNetworking */,
-			);
-			path = AFNetworking;
-			sourceTree = "<group>";
-		};
-		2BA2A39B196B79FA004F84B9 /* AFNetworking */ = {
-			isa = PBXGroup;
-			children = (
-				2BA2A39C196B79FA004F84B9 /* AFSecurityPolicy.h */,
-				2BA2A39D196B79FA004F84B9 /* AFSecurityPolicy.m */,
-			);
-			path = AFNetworking;
-			sourceTree = "<group>";
-		};
-		2BA2A3A0196B79FA004F84B9 /* Reachability */ = {
-			isa = PBXGroup;
-			children = (
-				2BA2A3A2196B79FA004F84B9 /* Reachability.h */,
-				2BA2A3A3196B79FA004F84B9 /* Reachability.m */,
-			);
-			path = Reachability;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -413,10 +379,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				2BA2A289196B753A004F84B9 /* DemoViewController.swift in Sources */,
-				2BA2A3A5196B79FA004F84B9 /* AFSecurityPolicy.m in Sources */,
-				2BA2A3A9196B79FA004F84B9 /* Reachability.m in Sources */,
+				2B130E83196CF1B9001207EF /* AFSecurityPolicy.m in Sources */,
 				2BA2A287196B753A004F84B9 /* AppDelegate.swift in Sources */,
 				2BA2A390196B7628004F84B9 /* TheNetwork.swift in Sources */,
+				2B130E84196CF1B9001207EF /* Reachability.m in Sources */,
 				2BA2A38F196B7628004F84B9 /* BodyFormatter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -425,8 +391,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2BA2A3B3196B7ABB004F84B9 /* AFSecurityPolicy.m in Sources */,
-				2BA2A3B4196B7ABB004F84B9 /* Reachability.m in Sources */,
 				2BA2A395196B76EB004F84B9 /* BodyFormatter.swift in Sources */,
 				2BA2A396196B76EB004F84B9 /* TheNetwork.swift in Sources */,
 				2BA2A38B196B7554004F84B9 /* TheNetworkTests.swift in Sources */,
