@@ -657,7 +657,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
          // it didn't fail, so remove the paused download task if it existed in the downloadsToResume dict.
         downloadsToResume.removeObjectForKey(task.taskIdentifier)
 
-        // We can be in this method at the end of the 4 API methods for TSNetworkingSwift: performDataTask, uploadSourceURL, downloadFromFullURL, multipartFormPost
+        // We can be in this method at the end of the 4 API methods for TSNetworkingSwift: performDataTask, upload, download, multipartFormPost
         if let blockHolder: BlockHolder = uploadCompletionBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
             if let uploadCompletionBlock = blockHolder.uploadCompletedBlock {
                 var data: NSData? = nil
@@ -680,7 +680,9 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             downloadProgressBlocks.removeObjectForKey(task.taskIdentifier) // no need to hold on to the progress block for a completed task
             
         } else if let blockHolder: BlockHolder = taskDataBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
-            blockHolder.dataTaskCompletionBlock?(data: blockHolder.dataTaskData?, response: task.response, error: error)
+            if let dataTaskCompletionBlock = blockHolder.dataTaskCompletionBlock {
+                dataTaskCompletionBlock(data: blockHolder.dataTaskData?, response: task.response, error: error)
+            }
             taskDataBlocks.removeObjectForKey(task.taskIdentifier)
         }
         
