@@ -15,9 +15,9 @@ protocol BodyFormatter {
 class BodyFormatterJSON: BodyFormatter {
     func formatData(userParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError? {
         var error: NSError?
-        if let jsonData = NSJSONSerialization.dataWithJSONObject(userParameters, options: NSJSONWritingOptions.PrettyPrinted, error: &error) {
+        if let jsonData = NSJSONSerialization.dataWithJSONObject(userParameters!, options: NSJSONWritingOptions.PrettyPrinted, error: &error) {
             userRequest.HTTPBody = jsonData
-            if !userRequest.valueForHTTPHeaderField("Content-Type") && !userRequest.valueForHTTPHeaderField("content-type") {
+            if userRequest.valueForHTTPHeaderField("Content-Type") == nil && userRequest.valueForHTTPHeaderField("content-type") == nil {
                 let encoding = CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding))
                 userRequest.setValue("application/json; charset=\(encoding)", forHTTPHeaderField: "Content-Type")
             }
@@ -31,9 +31,9 @@ class BodyFormatterJSON: BodyFormatter {
 class BodyFormatterPListXML: BodyFormatter {
     func formatData(userParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError? {
         var error: NSError?
-        if let plistData = NSPropertyListSerialization.dataWithPropertyList(userParameters, format: NSPropertyListFormat.XMLFormat_v1_0, options:0, error: &error) {
+        if let plistData = NSPropertyListSerialization.dataWithPropertyList(userParameters!, format: NSPropertyListFormat.XMLFormat_v1_0, options:0, error: &error) {
             userRequest.HTTPBody = plistData
-            if !userRequest.valueForHTTPHeaderField("Content-Type") && !userRequest.valueForHTTPHeaderField("content-type") {
+            if userRequest.valueForHTTPHeaderField("Content-Type") == nil && userRequest.valueForHTTPHeaderField("content-type") == nil {
                 let encoding = CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding))
                 userRequest.setValue("application/x-plist; charset=\(encoding)", forHTTPHeaderField: "Content-Type")
             }

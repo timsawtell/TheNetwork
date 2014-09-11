@@ -10,8 +10,8 @@ import Foundation
 import UIKit
 
 class DemoViewController: UIViewController {
-    @IBOutlet var button: UIButton
-    @IBOutlet var progressBar: UIProgressView
+    @IBOutlet var button: UIButton?
+    @IBOutlet var progressBar: UIProgressView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,7 +33,7 @@ class DemoViewController: UIViewController {
             button.userInteractionEnabled = true
             button.setTitle("Download", forState: .Normal)
             if let strongSelf = weakSelf {
-                strongSelf.progressBar.progress = 0
+                strongSelf.progressBar?.progress = 0
             }
         }
         
@@ -42,7 +42,7 @@ class DemoViewController: UIViewController {
             button.userInteractionEnabled = true
             button.setTitle("Download", forState: .Normal)
             if let strongSelf = weakSelf {
-                strongSelf.progressBar.progress = 0
+                strongSelf.progressBar?.progress = 0
             }
         }
         
@@ -53,7 +53,7 @@ class DemoViewController: UIViewController {
             NSLog("Download written: \(hBytesWritten), TotalBytesWritten: \(hTotalWritten), expectedToWrite: \(hTotalToWrite)")
             var progress = (Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
             if let strongSelf = weakSelf {
-                strongSelf.progressBar.progress = Float(progress)
+                strongSelf.progressBar?.progress = Float(progress)
             }
         }
         
