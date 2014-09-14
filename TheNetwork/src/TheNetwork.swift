@@ -22,10 +22,10 @@ class BlockHolder {
     var errorBlock: NetworkErrorBlock?                                 // programmer defined error block
     var downloadProgressBlock: NetworkDownloadProgressBlock?           // for downloads
     var uploadProgressBlock: NetworkUploadProgressBlock?               // for uploads
-    var downloadCompletionBlock: URLSessionDownloadTaskCompletion?  // for downloads
-    var uploadCompletedBlock: URLSessionTaskCompletion?             // for uploads
-    var dataTaskData: NSMutableData?                                // for gets/posts/puts etc
-    var dataTaskCompletionBlock: URLSessionTaskCompletion?          // for gets/posts/puts etc
+    var downloadCompletionBlock: URLSessionDownloadTaskCompletion?      // for downloads
+    var uploadCompletedBlock: URLSessionTaskCompletion?                 // for uploads
+    var dataTaskData: NSMutableData?                                    // for gets/posts/puts etc
+    var dataTaskCompletionBlock: URLSessionTaskCompletion?              // for gets/posts/puts etc
 }
 
 struct MultipartFormFile {
@@ -58,31 +58,31 @@ extension String {
     }
 }
 
-let Network = TheNetwork()
+let Network = TheNetwork() // global variable (singleton)
 
 class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, NSURLSessionDataDelegate {
     
     // to be marked private when Swift has access modifiers ...
-    var baseURL: NSURL = NSURL.URLWithString("")
-    var defaultConfiguration: NSURLSessionConfiguration
-    var acceptableStatusCodes: NSIndexSet
-    var downloadProgressBlocks = NSMutableDictionary()
-    var downloadCompletionBlocks = NSMutableDictionary()
-    var uploadProgressBlocks = NSMutableDictionary()
-    var uploadCompletionBlocks = NSMutableDictionary()
-    var taskDataBlocks = NSMutableDictionary()
-    var sessionHeaders = NSMutableDictionary()
-    var downloadsToResume = NSMutableDictionary()
-    var sharedURLSession = NSURLSession()
-    var username = String()
-    var password = String()
-    var activeTasks = 0
-    var sessionCompletionHandler: SessionCompletionHandler
-    var securityPolicy: AFSecurityPolicy
+    private var baseURL: NSURL = NSURL.URLWithString("")
+    private var defaultConfiguration: NSURLSessionConfiguration
+    private var acceptableStatusCodes: NSIndexSet
+    private var downloadProgressBlocks = NSMutableDictionary()
+    private var downloadCompletionBlocks = NSMutableDictionary()
+    private var uploadProgressBlocks = NSMutableDictionary()
+    private var uploadCompletionBlocks = NSMutableDictionary()
+    private var taskDataBlocks = NSMutableDictionary()
+    private var sessionHeaders = NSMutableDictionary()
+    private var downloadsToResume = NSMutableDictionary()
+    private var sharedURLSession = NSURLSession()
+    private var username = String()
+    private var password = String()
+    private var activeTasks = 0
+    private var securityPolicy: AFSecurityPolicy
     var bodyFormatter: BodyFormatter
+    var sessionCompletionHandler: SessionCompletionHandler
     
     override init() {
-        defaultConfiguration = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier("au.com.sawtellsoftware.tsnetworking")
+        defaultConfiguration = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier("au.com.sawtellsoftware.thenetwork")
         acceptableStatusCodes = NSIndexSet(indexesInRange: NSMakeRange(200, 100))
         securityPolicy = AFSecurityPolicy.defaultPolicy()
         bodyFormatter = BodyFormatterJSON()
@@ -140,7 +140,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         return count
     }
     
-    func taskCompletionBlockForRequest(request: NSMutableURLRequest,
+    private func taskCompletionBlockForRequest(request: NSMutableURLRequest,
         successBlock: NetworkSuccessBlock? = nil,
         errorBlock: NetworkErrorBlock? = nil) -> URLSessionTaskCompletion {
             
@@ -201,7 +201,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         return completionBlock
     }
     
-    func resultBasedOnContentType(contentType: NSString, encoding: NSStringEncoding, data: NSData?) -> AnyObject {
+    private func resultBasedOnContentType(contentType: NSString, encoding: NSStringEncoding, data: NSData?) -> AnyObject {
         
         var firstComponent = NSString(), secondComponent = NSString()
         var indexOfSlash: Int = contentType.rangeOfString("/").location
@@ -230,7 +230,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         return parsedString
     }
     
-    func validateResponse(response: NSURLResponse?) -> NSError? {
+    private func validateResponse(response: NSURLResponse?) -> NSError? {
         if let httpResponse = response as? NSHTTPURLResponse {
             if !acceptableStatusCodes.containsIndex(httpResponse.statusCode) {
                 var text = "Request failed: \(NSHTTPURLResponse.localizedStringForStatusCode(httpResponse.statusCode)) (\(httpResponse.statusCode))"
@@ -247,7 +247,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         return nil
     }
     
-    func addHeaders(headers: NSDictionary?, request: NSMutableURLRequest) {
+    private func addHeaders(headers: NSDictionary?, request: NSMutableURLRequest) {
         if username.isSane() && password.isSane() {
             var base64Encoded = "Basic " + String("\(username):\(password)").dataUsingEncoding(NSUTF8StringEncoding)!.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.fromRaw(0)!)
             request.setValue(base64Encoded, forHTTPHeaderField: "Authorization")
@@ -265,8 +265,6 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             }
         }
     }
-    
-    // PUBLIC (when apple get around to giving us access modifiers like private and protected etc)
     
     func setBaseURLString(baseURLString: NSString) {
         baseURL = NSURL.URLWithString(baseURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)
