@@ -63,7 +63,7 @@ let Network = TheNetwork() // global variable (singleton)
 class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDownloadDelegate, NSURLSessionDataDelegate {
     
     // to be marked private when Swift has access modifiers ...
-    private var baseURL: NSURL = NSURL.URLWithString("")
+    private var baseURL: NSURL = NSURL(string: "")!
     private var defaultConfiguration: NSURLSessionConfiguration
     private var acceptableStatusCodes: NSIndexSet
     private var downloadProgressBlocks = NSMutableDictionary()
@@ -224,7 +224,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     return parsedXML
                 }
             }
-            parsedString = NSString(data: realData, encoding: encoding)
+            parsedString = NSString(data: realData, encoding: encoding)!
         }
         
         return parsedString
@@ -235,12 +235,12 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             if !acceptableStatusCodes.containsIndex(httpResponse.statusCode) {
                 var text = "Request failed: \(NSHTTPURLResponse.localizedStringForStatusCode(httpResponse.statusCode)) (\(httpResponse.statusCode))"
                 var converted = NSLocalizedString(text, comment: "")
-                let error = NSError.errorWithDomain(NSURLErrorDomain, code: httpResponse.statusCode, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                let error = NSError(domain: NSURLErrorDomain, code: httpResponse.statusCode, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                 return error
             }
         } else if nil == response {
             var text = NSLocalizedString("No response", comment: "")
-            let error = NSError.errorWithDomain(NSURLErrorDomain, code: 500, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+            let error = NSError(domain: NSURLErrorDomain, code: 500, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
             return error
         }
         
@@ -249,25 +249,27 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
     
     private func addHeaders(headers: NSDictionary?, request: NSMutableURLRequest) {
         if username.isSane() && password.isSane() {
-            var base64Encoded = "Basic " + String("\(username):\(password)").dataUsingEncoding(NSUTF8StringEncoding)!.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.fromRaw(0)!)
-            request.setValue(base64Encoded, forHTTPHeaderField: "Authorization")
+            var encodedStringData = String("\(username):\(password)").dataUsingEncoding(NSUTF8StringEncoding)!
+            var base64String = encodedStringData.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.allZeros)
+            var finalString = "Basic " + base64String
+            request.setValue(finalString, forHTTPHeaderField: "Authorization")
         }
         if let additionalHeaders = headers {
             for keyVal in additionalHeaders {
                 if let existing = request.valueForHTTPHeaderField(keyVal.key as String) {} else {
-                    request.addValue(keyVal.value as String, forHTTPHeaderField: keyVal.key as String)
+                    request.addValue(keyVal.value as? String, forHTTPHeaderField: keyVal.key as String)
                 }
             }
         }
         for keyVal in sessionHeaders {
             if let existing = request.valueForHTTPHeaderField(keyVal.key as String) {} else {
-                request.addValue(keyVal.value as String, forHTTPHeaderField: keyVal.key as String)
+                request.addValue(keyVal.value as? String, forHTTPHeaderField: keyVal.key as String)
             }
         }
     }
     
     func setBaseURLString(baseURLString: NSString) {
-        baseURL = NSURL.URLWithString(baseURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)
+        baseURL = NSURL(string: baseURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)!
     }
     
     func setBasicAuth(#user: NSString, pass: NSString) {
@@ -337,7 +339,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             requestURL = requestURL.URLByAppendingPathComponent(suppliedPath)
         }
         var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
-        request.HTTPMethod = method.toRaw()
+        request.HTTPMethod = method.rawValue
             
         switch method {
         case HTTP_METHOD.POST, HTTP_METHOD.PUT, HTTP_METHOD.PATCH:
@@ -388,8 +390,8 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         progressBlock: NetworkDownloadProgressBlock? = nil,
         additionalHeaders: NSDictionary? = nil) -> NSURLSessionDownloadTask {
             
-        var request = NSMutableURLRequest(URL: NSURL(string: fullSourceURL.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!))
-        request.HTTPMethod = HTTP_METHOD.GET.toRaw()
+        var request = NSMutableURLRequest(URL: NSURL(string: fullSourceURL.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)!)
+        request.HTTPMethod = HTTP_METHOD.GET.rawValue
         
         weak var weakSelf = self
         
@@ -414,7 +416,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     if !fm.fileExistsAtPath(tempLocation.path!) {
                         // aint this some shit, it finished without error, but the file is not available at location
                         var text = NSLocalizedString("Unable to locate downloaded file", comment: "")
-                        let notFoundError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                        let notFoundError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                         if let realErrorBlock = errorBlock {
                             realErrorBlock(resultObject: nil, error: notFoundError, request: request, response: nil)
                         }
@@ -430,7 +432,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     if nil != fileBasedError {
                         // son of a bitch
                         var text = NSLocalizedString("Download success, however destination path already exists, and that file was unable to be deleted", comment: "")
-                        let cantDeleteError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                        let cantDeleteError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                         if let realErrorBlock = errorBlock {
                             realErrorBlock(resultObject: nil, error: cantDeleteError, request: request, response: nil)
                         }
@@ -442,7 +444,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     if nil != fileBasedError {
                         // double son of a bitch
                         var text = NSLocalizedString("Download success, however unable to move downloaded file to the destination path.", comment: "")
-                        let cantMoveError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                        let cantMoveError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                         if let realErrorBlock = errorBlock {
                             realErrorBlock(resultObject: nil, error: cantMoveError, request: request, response: nil)
                         }
@@ -457,7 +459,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                 }
                 
                 var text = NSLocalizedString("Unable to locate downloaded file.", comment: "")
-                let cantFindError = NSError.errorWithDomain(NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                let cantFindError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
                 if let realErrorBlock = errorBlock {
                     realErrorBlock(resultObject: nil, error: cantFindError, request: request, response: nil)
                 }
@@ -490,8 +492,8 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         var fm = NSFileManager()
         var error: NSError?
        
-        var request = NSMutableURLRequest(URL: NSURL(string: destinationFullURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!))
-        request.HTTPMethod = HTTP_METHOD.POST.toRaw()
+        var request = NSMutableURLRequest(URL: NSURL(string: destinationFullURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)!)
+        request.HTTPMethod = HTTP_METHOD.POST.rawValue
         var completionBlock = taskCompletionBlockForRequest(request, successBlock: successBlock, errorBlock: errorBlock)
         addHeaders(additionalHeaders, request: request)
         var uploadTask = sharedURLSession.uploadTaskWithRequest(request, fromFile:sourceURL)
@@ -526,7 +528,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             requestURL = requestURL.URLByAppendingPathComponent(suppliedPath)
         }
         var request = NSMutableURLRequest(URL: requestURL, cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData, timeoutInterval: defaultConfiguration.timeoutIntervalForRequest)
-        request.HTTPMethod = HTTP_METHOD.POST.toRaw()
+        request.HTTPMethod = HTTP_METHOD.POST.rawValue
         let boundary = "Z2FiZW5pc2xvdmVnYWJlbmlzbGlmZQ=="
         let contentType = "multipart/form-data; boundary=\(boundary)"
 

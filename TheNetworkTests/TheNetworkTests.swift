@@ -74,7 +74,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kNoAuthNeeded)
         let task = Network.performDataTask(relativePath: testPath, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -108,7 +108,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kNoAuthNeeded)
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, additionalHeaders: additionalHeaders)
         
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -143,7 +143,7 @@ class TheNetworkTests: XCTestCase {
         Network.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -172,7 +172,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kNoAuthNeeded)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -197,7 +197,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBasicAuth(user: "hack", pass: "thegibson")
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -221,7 +221,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBasicAuth(user: "hack", pass: "thegibsonWRONG")
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         NSLog("\(task.originalRequest.allHTTPHeaderFields)")
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -252,7 +252,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kJSON)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -283,7 +283,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kXML)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.toRaw(), "task wasn't a GET")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -316,7 +316,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kNoAuthNeeded)
         
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
 
@@ -362,7 +362,7 @@ class TheNetworkTests: XCTestCase {
         Network.bodyFormatter = BodyFormatterJSON()
         
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields!["Content-Type"] {
             XCTAssertTrue(contentType as String == "application/json; charset=utf-8", "content-type not set correctly")
         } else {
@@ -413,7 +413,7 @@ class TheNetworkTests: XCTestCase {
         Network.bodyFormatter = BodyFormatterPListXML() // change the default body formatter
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields!["Content-Type"] {
             XCTAssertTrue(contentType as String == "application/x-plist; charset=utf-8", "content-type not set correctly")
         } else {
@@ -437,7 +437,7 @@ class TheNetworkTests: XCTestCase {
             
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")
-            var string = NSString(data: bodyData!, encoding: NSUTF8StringEncoding)
+            var string = NSString(data: bodyData!, encoding: NSUTF8StringEncoding)!
             XCTAssertNotNil(string, "body string was nil")
             XCTAssertTrue(string.containsString("some crazy"), "didn't contain the string from our custom body formatter")
             testFinished.fulfill()
@@ -454,7 +454,7 @@ class TheNetworkTests: XCTestCase {
             return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!
         })
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.toRaw(), "task wasn't a POST")
+        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
