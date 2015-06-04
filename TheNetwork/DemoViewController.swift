@@ -19,7 +19,7 @@ class DemoViewController: UIViewController {
     }
     
     @IBAction func downloadPressed(sender: AnyObject) {
-        let button = sender as UIButton
+        let button = sender as! UIButton
         button.userInteractionEnabled = false;
         button.setTitle("downloading ...", forState: .Normal)
         

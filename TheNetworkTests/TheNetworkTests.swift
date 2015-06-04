@@ -61,8 +61,8 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let testPath = "something"
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
-            XCTAssertTrue(request.URL.lastPathComponent == testPath, "path wasn't appended")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertTrue(request.URL!.lastPathComponent == testPath, "path wasn't appended")
             testFinished.fulfill()
         }
         
@@ -88,10 +88,10 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             var requestHeaders = request.allHTTPHeaderFields!
             if let contentType: AnyObject = requestHeaders["Content-Type"] {
-                XCTAssertTrue(contentType as NSString == "application/json", "Content-Type header missing")
+                XCTAssertTrue(contentType as! NSString == "application/json", "Content-Type header missing")
             } else {
                 XCTFail("content-type missing")
             }
@@ -122,10 +122,10 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             var requestHeaders = request.allHTTPHeaderFields!
             if let contentType: AnyObject = requestHeaders["accept"] {
-                XCTAssertTrue(contentType as NSString == "application/json", "Accept header missing")
+                XCTAssertTrue(contentType as! NSString == "application/json", "Accept header missing")
             } else {
                 XCTFail("Accept header missing")
             }
@@ -140,7 +140,7 @@ class TheNetworkTests: XCTestCase {
         }
         
         Network.setBaseURLString(kNoAuthNeeded)
-        Network.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept"))
+        Network.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept") as [NSObject : AnyObject])
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
@@ -157,9 +157,9 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             var shouldBeURL = "\(kNoAuthNeeded)?key=value"
-            XCTAssertEqual(request.URL.absoluteString!, shouldBeURL, "the query string wasn't set correctly, it was \(request.URL.absoluteString)")
+            XCTAssertEqual(request.URL!.absoluteString!, shouldBeURL, "the query string wasn't set correctly, it was \(request.URL!.absoluteString)")
             testFinished.fulfill()
         }
         
@@ -235,7 +235,7 @@ class TheNetworkTests: XCTestCase {
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject!.isKindOfClass(NSDictionary.self), "result was not a dictionary")
-            let dict = resultObject as Dictionary<String, String>
+            let dict = resultObject as! Dictionary<String, String>
             if let value = dict["key"] {
                 XCTAssertTrue(value as NSString == "value", "Incorrect dictionary contents")
             } else {
@@ -266,7 +266,7 @@ class TheNetworkTests: XCTestCase {
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject!.isKindOfClass(NSDictionary.self), "result was not a dictionary")
-            let dict = resultObject as Dictionary<String, String>
+            let dict = resultObject as! Dictionary<String, String>
             if let value = dict["key"] {
                 XCTAssertTrue(value as NSString == "value", "Incorrect dictionary contents")
             } else {
@@ -301,7 +301,7 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             var body = NSString(data: request.HTTPBody!, encoding: NSUTF8StringEncoding)
             XCTAssertNotNil(body, "body had no content for the POST")
             testFinished.fulfill()
@@ -330,7 +330,7 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")
@@ -343,7 +343,7 @@ class TheNetworkTests: XCTestCase {
                 XCTFail("Parse error: \(realError.localizedDescription)")
             }
             if let jsonDict: NSDictionary = parsedJSON as? NSDictionary {
-                let found = jsonDict.valueForKey("key") as String
+                let found = jsonDict.valueForKey("key") as! String
                 XCTAssertEqual(found, "value")
             } else {
                 XCTFail("Parsed JSON was not a dictionary")
@@ -364,7 +364,7 @@ class TheNetworkTests: XCTestCase {
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields!["Content-Type"] {
-            XCTAssertTrue(contentType as String == "application/json; charset=utf-8", "content-type not set correctly")
+            XCTAssertTrue(contentType as! String == "application/json; charset=utf-8", "content-type not set correctly")
         } else {
             XCTFail("content type header missing")
         }
@@ -381,7 +381,7 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")
@@ -394,7 +394,7 @@ class TheNetworkTests: XCTestCase {
                 XCTFail("Parse error: \(realError.localizedDescription)")
             }
             if let xmlDict: NSDictionary = parsedXML as? NSDictionary {
-                let found = xmlDict.valueForKey("key") as String
+                let found = xmlDict.valueForKey("key") as! String
                 XCTAssertEqual(found, "value")
             } else {
                 XCTFail("Parsed XML was not a dictionary")
@@ -415,7 +415,7 @@ class TheNetworkTests: XCTestCase {
         
         XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields!["Content-Type"] {
-            XCTAssertTrue(contentType as String == "application/x-plist; charset=utf-8", "content-type not set correctly")
+            XCTAssertTrue(contentType as! String == "application/x-plist; charset=utf-8", "content-type not set correctly")
         } else {
             XCTFail("content type header missing")
         }
@@ -433,7 +433,7 @@ class TheNetworkTests: XCTestCase {
         var testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
-            XCTAssertEqual("cheers man", resultObject as String, "result object was not what kNoAuthNeeded node server returns")
+            XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")

@@ -123,11 +123,11 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
     func resumePausedDownloads() -> NSInteger {
         var count = downloadsToResume.count
         for (key, keyValue) in enumerate(downloadsToResume) {
-            var dictKeyAsInt = keyValue.key as Int
+            var dictKeyAsInt = keyValue.key as! Int
             downloadProgressBlocks.removeObjectForKey(dictKeyAsInt)
             downloadCompletionBlocks.removeObjectForKey(dictKeyAsInt)
             
-            var downloadTask = sharedURLSession.downloadTaskWithResumeData(keyValue.value as NSData)
+            var downloadTask = sharedURLSession.downloadTaskWithResumeData(keyValue.value as! NSData)
             dictKeyAsInt = downloadTask.taskIdentifier
             if let progress : AnyObject = downloadProgressBlocks.objectForKey(dictKeyAsInt) {
                 downloadProgressBlocks.setObject(progress, forKey: dictKeyAsInt)
@@ -224,7 +224,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     return parsedXML
                 }
             }
-            parsedString = NSString(data: realData, encoding: encoding)!
+            parsedString = NSString(data: realData, encoding: encoding)! as String
         }
         
         return parsedString
@@ -235,12 +235,12 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             if !acceptableStatusCodes.containsIndex(httpResponse.statusCode) {
                 var text = "Request failed: \(NSHTTPURLResponse.localizedStringForStatusCode(httpResponse.statusCode)) (\(httpResponse.statusCode))"
                 var converted = NSLocalizedString(text, comment: "")
-                let error = NSError(domain: NSURLErrorDomain, code: httpResponse.statusCode, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                let error = NSError(domain: NSURLErrorDomain, code: httpResponse.statusCode, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey) as [NSObject : AnyObject])
                 return error
             }
         } else if nil == response {
             var text = NSLocalizedString("No response", comment: "")
-            let error = NSError(domain: NSURLErrorDomain, code: 500, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+            let error = NSError(domain: NSURLErrorDomain, code: 500, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey) as [NSObject : AnyObject])
             return error
         }
         
@@ -256,14 +256,14 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         }
         if let additionalHeaders = headers {
             for keyVal in additionalHeaders {
-                if let existing = request.valueForHTTPHeaderField(keyVal.key as String) {} else {
-                    request.addValue(keyVal.value as? String, forHTTPHeaderField: keyVal.key as String)
+                if let existing = request.valueForHTTPHeaderField(keyVal.key as! String) {} else {
+                    request.addValue(keyVal.value as? String, forHTTPHeaderField: keyVal.key as! String)
                 }
             }
         }
         for keyVal in sessionHeaders {
-            if let existing = request.valueForHTTPHeaderField(keyVal.key as String) {} else {
-                request.addValue(keyVal.value as? String, forHTTPHeaderField: keyVal.key as String)
+            if let existing = request.valueForHTTPHeaderField(keyVal.key as! String) {} else {
+                request.addValue(keyVal.value as? String, forHTTPHeaderField: keyVal.key as! String)
             }
         }
     }
@@ -272,12 +272,12 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         baseURL = NSURL(string: baseURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)!
     }
     
-    func setBasicAuth(#user: NSString, pass: NSString) {
+    func setBasicAuth(#user: String, pass: String) {
         username = user
         password = pass
     }
     
-    func addSessionHeaders(headers: NSDictionary) {
+    func addSessionHeaders(headers: [NSObject : AnyObject]) {
         sessionHeaders.addEntriesFromDictionary(headers)
     }
     
@@ -327,12 +327,12 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         }
     }
     
-    func performDataTask(#relativePath: NSString?,
+    func performDataTask(#relativePath: String?,
         method: HTTP_METHOD,
-        successBlock: NetworkSuccessBlock? = nil,
-        errorBlock: NetworkErrorBlock? = nil,
         parameters: NSDictionary? = nil,
-        additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
+        additionalHeaders: NSDictionary? = nil,
+        successBlock: NetworkSuccessBlock? = nil,
+        errorBlock: NetworkErrorBlock? = nil) ->NSURLSessionDataTask {
             
         var requestURL = baseURL
         if let suppliedPath = relativePath {
@@ -372,7 +372,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         
         var completionBlock: URLSessionTaskCompletion = taskCompletionBlockForRequest(request, successBlock: successBlock, errorBlock: errorBlock)
         addHeaders(additionalHeaders, request: request)
-        var task = sharedURLSession.dataTaskWithRequest(request, nil)
+        var task = sharedURLSession.dataTaskWithRequest(request, completionHandler: nil)
         
         var holder = BlockHolder()
         holder.dataTaskCompletionBlock = completionBlock
@@ -383,12 +383,12 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         return task
     }
     
-    func download(#fullSourceURL: NSString,
-        destinationPathString: NSString,
+    func download(#fullSourceURL: String,
+        destinationPathString: String,
+        additionalHeaders: NSDictionary? = nil,
         successBlock: NetworkSuccessBlock? = nil,
         errorBlock: NetworkErrorBlock? = nil,
-        progressBlock: NetworkDownloadProgressBlock? = nil,
-        additionalHeaders: NSDictionary? = nil) -> NSURLSessionDownloadTask {
+        progressBlock: NetworkDownloadProgressBlock? = nil) -> NSURLSessionDownloadTask {
             
         var request = NSMutableURLRequest(URL: NSURL(string: fullSourceURL.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!)!)
         request.HTTPMethod = HTTP_METHOD.GET.rawValue
@@ -416,7 +416,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     if !fm.fileExistsAtPath(tempLocation.path!) {
                         // aint this some shit, it finished without error, but the file is not available at location
                         var text = NSLocalizedString("Unable to locate downloaded file", comment: "")
-                        let notFoundError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                        let notFoundError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotOpenFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey) as [NSObject : AnyObject])
                         if let realErrorBlock = errorBlock {
                             realErrorBlock(resultObject: nil, error: notFoundError, request: request, response: nil)
                         }
@@ -425,14 +425,14 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     
                     // delete an existing file at the programmers destination path string
                     var fileBasedError: NSError?
-                    if fm.fileExistsAtPath(destinationPathString) {
+                    if fm.fileExistsAtPath(destinationPathString as String) {
                         fm.removeItemAtPath(destinationPathString, error: &fileBasedError)
                     }
                     
                     if nil != fileBasedError {
                         // son of a bitch
                         var text = NSLocalizedString("Download success, however destination path already exists, and that file was unable to be deleted", comment: "")
-                        let cantDeleteError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                        let cantDeleteError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey) as [NSObject : AnyObject])
                         if let realErrorBlock = errorBlock {
                             realErrorBlock(resultObject: nil, error: cantDeleteError, request: request, response: nil)
                         }
@@ -444,7 +444,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                     if nil != fileBasedError {
                         // double son of a bitch
                         var text = NSLocalizedString("Download success, however unable to move downloaded file to the destination path.", comment: "")
-                        let cantMoveError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                        let cantMoveError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey) as [NSObject : AnyObject])
                         if let realErrorBlock = errorBlock {
                             realErrorBlock(resultObject: nil, error: cantMoveError, request: request, response: nil)
                         }
@@ -459,7 +459,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
                 }
                 
                 var text = NSLocalizedString("Unable to locate downloaded file.", comment: "")
-                let cantFindError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey))
+                let cantFindError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotRemoveFile, userInfo:NSDictionary(object: text, forKey: NSLocalizedDescriptionKey) as [NSObject : AnyObject])
                 if let realErrorBlock = errorBlock {
                     realErrorBlock(resultObject: nil, error: cantFindError, request: request, response: nil)
                 }
@@ -484,10 +484,10 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
     
     func upload(#sourceURL: NSURL,
         destinationFullURLString: NSString,
+        additionalHeaders: NSDictionary? = nil,
         successBlock: NetworkSuccessBlock? = nil,
         errorBlock: NetworkErrorBlock? = nil,
-        progressBlock: NetworkUploadProgressBlock? = nil,
-        additionalHeaders: NSDictionary? = nil) -> NSURLSessionUploadTask {
+        progressBlock: NetworkUploadProgressBlock? = nil) -> NSURLSessionUploadTask {
         
         var fm = NSFileManager()
         var error: NSError?
@@ -516,12 +516,12 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         return uploadTask
     }
     
-    func multipartFormPost(#relativePath: NSString?,
+    func multipartFormPost(relativePath: String? = nil,
         parameters: NSDictionary? = nil,
+        additionalHeaders: NSDictionary? = nil,
         multipartFormFiles: [MultipartFormFile]? = nil,
         successBlock: NetworkSuccessBlock? = nil,
-        errorBlock: NetworkErrorBlock? = nil,
-        additionalHeaders: NSDictionary? = nil) ->NSURLSessionDataTask {
+        errorBlock: NetworkErrorBlock? = nil) ->NSURLSessionDataTask {
         
         var requestURL = baseURL
         if let suppliedPath = relativePath {
@@ -553,14 +553,14 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         var headers = NSMutableDictionary(object: contentType, forKey: "Content-Type")
         headers.setValue("\(body.length)", forKey: "Content-Length")
         if let userHeaders = additionalHeaders {
-            headers.addEntriesFromDictionary(userHeaders)
+            headers.addEntriesFromDictionary(userHeaders as [NSObject : AnyObject])
         }
         addHeaders(headers, request: request)
         request.HTTPBody = body
         
         var completionBlock: URLSessionTaskCompletion = taskCompletionBlockForRequest(request, successBlock: successBlock, errorBlock: errorBlock)
 
-        var task = sharedURLSession.dataTaskWithRequest(request, nil)
+        var task = sharedURLSession.dataTaskWithRequest(request, completionHandler: nil)
         
         var holder = BlockHolder()
         holder.dataTaskCompletionBlock = completionBlock
@@ -572,7 +572,8 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
     }
     
     // NSURLSessionDelegate
-    func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: ((NSURLSessionAuthChallengeDisposition, NSURLCredential!) -> Void)!) {
+    
+    func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential!) -> Void) {
         var disposition = NSURLSessionAuthChallengeDisposition.PerformDefaultHandling
         var credential: NSURLCredential? = nil
         
@@ -586,19 +587,17 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
         } else {
             disposition = .CancelAuthenticationChallenge
         }
-        if let handler = completionHandler {
-            handler(disposition, credential)
-        }
+        completionHandler(disposition, credential)
     }
     
-    func URLSessionDidFinishEventsForBackgroundURLSession(session: NSURLSession!) {
+    func URLSessionDidFinishEventsForBackgroundURLSession(session: NSURLSession) {
         if let completionHandler = sessionCompletionHandler {
             completionHandler()
             sessionCompletionHandler = nil
         }
     }
     
-    func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData!) {
+    func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData) {
 
         if let blockHolder: BlockHolder = taskDataBlocks.objectForKey(dataTask.taskIdentifier) as? BlockHolder {
             if nil == blockHolder.dataTaskData {
@@ -667,7 +666,7 @@ class TheNetwork: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate, NSUR
             
         } else if let blockHolder: BlockHolder = taskDataBlocks.objectForKey(task.taskIdentifier) as? BlockHolder {
             if let dataTaskCompletionBlock = blockHolder.dataTaskCompletionBlock {
-                dataTaskCompletionBlock(data: blockHolder.dataTaskData?, response: task.response, error: error)
+                dataTaskCompletionBlock(data: blockHolder.dataTaskData, response: task.response, error: error)
             }
             taskDataBlocks.removeObjectForKey(task.taskIdentifier)
         }
