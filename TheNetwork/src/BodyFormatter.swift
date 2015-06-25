@@ -14,32 +14,32 @@ protocol BodyFormatter {
 
 class BodyFormatterJSON: BodyFormatter {
     func formatData(userParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError? {
-        var error: NSError?
-        if let jsonData = NSJSONSerialization.dataWithJSONObject(userParameters!, options: NSJSONWritingOptions.PrettyPrinted, error: &error) {
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(userParameters!, options: NSJSONWritingOptions.PrettyPrinted)
             userRequest.HTTPBody = jsonData
             if userRequest.valueForHTTPHeaderField("Content-Type") == nil && userRequest.valueForHTTPHeaderField("content-type") == nil {
                 let encoding = CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding))
                 userRequest.setValue("application/json; charset=\(encoding)", forHTTPHeaderField: "Content-Type")
             }
             return nil
-        } else {
-            return error
+        } catch let error {
+            return error as NSError
         }
     }
 }
 
 class BodyFormatterPListXML: BodyFormatter {
     func formatData(userParameters: AnyObject?, userRequest: NSMutableURLRequest) -> NSError? {
-        var error: NSError?
-        if let plistData = NSPropertyListSerialization.dataWithPropertyList(userParameters!, format: NSPropertyListFormat.XMLFormat_v1_0, options:0, error: &error) {
+        do {
+            let plistData = try NSPropertyListSerialization.dataWithPropertyList(userParameters!, format: NSPropertyListFormat.XMLFormat_v1_0, options:0)
             userRequest.HTTPBody = plistData
             if userRequest.valueForHTTPHeaderField("Content-Type") == nil && userRequest.valueForHTTPHeaderField("content-type") == nil {
                 let encoding = CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding))
                 userRequest.setValue("application/x-plist; charset=\(encoding)", forHTTPHeaderField: "Content-Type")
             }
             return nil
-        } else {
-            return error
+        } catch let error {
+            return error as NSError
         }
     }
 }

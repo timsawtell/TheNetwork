@@ -51,7 +51,7 @@ class DemoViewController: UIViewController {
             let hTotalWritten = NSByteCountFormatter.stringFromByteCount(totalBytesWritten, countStyle: .File)
             let hTotalToWrite = NSByteCountFormatter.stringFromByteCount(totalBytesExpectedToWrite, countStyle: .File)
             NSLog("Download written: \(hBytesWritten), TotalBytesWritten: \(hTotalWritten), expectedToWrite: \(hTotalToWrite)")
-            var progress = (Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
+            let progress = (Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
             if let strongSelf = weakSelf {
                 strongSelf.progressBar?.progress = Float(progress)
             }

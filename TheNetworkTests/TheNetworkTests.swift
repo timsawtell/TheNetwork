@@ -20,18 +20,14 @@ $> npm install multiparty
 
 after the package is installed do this in a few terminal windows
 
-node TheNetworkTests/node/auth.node.js 
-node TheNetworkTests/node/multipart.node.js
-node TheNetworkTests/node/noauth.node.js
-node TheNetworkTests/node/json.node.js
-node TheNetworkTests/node/xml.node.js
+node TheNetworkTests/node/all.node.js`
 */
 
-let kNoAuthNeeded = "http://localhost:8081";
-let kAuthNeeded = "http://localhost:8080";
-let kJSON = "http://localhost:8083";
-let kXML = "http://localhost:8084";
-let kMultipartUpload = "http://localhost:8082/upload";
+let kNoAuthNeeded = "http://localhost:8080/noauth";
+let kAuthNeeded = "http://localhost:8080/auth";
+let kJSON = "http://localhost:8080/json";
+let kXML = "http://localhost:8080/xml";
+let kMultipartUpload = "http://localhost:8080/multipart";
 let remoteGabe = "http://images.dailytech.com/nimage/gabe_newell.jpeg"
 
 class TheNetworkTests: XCTestCase {
@@ -53,16 +49,13 @@ class TheNetworkTests: XCTestCase {
 
     /*
     * As a GET REQUEST I should has a HTTPMethod of "GET"
-    * If I add a path it should be appended to the base URL 
     * The resultObject should be what TSNetworkingSwiftTests/noauth.node.js returns
     */
     func testGet() {
         
-        var testFinished = expectationWithDescription("test finished")
-        let testPath = "something"
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
-            XCTAssertTrue(request.URL!.lastPathComponent == testPath, "path wasn't appended")
             testFinished.fulfill()
         }
         
@@ -72,9 +65,9 @@ class TheNetworkTests: XCTestCase {
             testFinished.fulfill()
         }
         Network.setBaseURLString(kNoAuthNeeded)
-        let task = Network.performDataTask(relativePath: testPath, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
+        let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
         
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -85,7 +78,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testGetAdditionalHeaders() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
@@ -104,11 +97,11 @@ class TheNetworkTests: XCTestCase {
             testFinished.fulfill()
         }
         
-        var additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
+        let additionalHeaders = NSDictionary(object: "application/json", forKey: "Content-Type")
         Network.setBaseURLString(kNoAuthNeeded)
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, additionalHeaders: additionalHeaders)
         
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -119,12 +112,12 @@ class TheNetworkTests: XCTestCase {
     */
     func testAddSessionHeaders() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             var requestHeaders = request.allHTTPHeaderFields!
-            if let contentType: AnyObject = requestHeaders["accept"] {
+            if let contentType: AnyObject = requestHeaders["Accept"] {
                 XCTAssertTrue(contentType as! NSString == "application/json", "Accept header missing")
             } else {
                 XCTFail("Accept header missing")
@@ -140,10 +133,10 @@ class TheNetworkTests: XCTestCase {
         }
         
         Network.setBaseURLString(kNoAuthNeeded)
-        Network.addSessionHeaders(NSDictionary(object: "application/json", forKey: "Accept") as [NSObject : AnyObject])
+        Network.addSessionHeaders(["Accept": "application/json"])
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -154,12 +147,12 @@ class TheNetworkTests: XCTestCase {
     */
     func testGetWithParameters() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
-            var shouldBeURL = "\(kNoAuthNeeded)?key=value"
-            XCTAssertEqual(request.URL!.absoluteString!, shouldBeURL, "the query string wasn't set correctly, it was \(request.URL!.absoluteString)")
+            let shouldBeURL = "\(kNoAuthNeeded)?key=value"
+            XCTAssertEqual(request.URL!.absoluteString, shouldBeURL, "the query string wasn't set correctly, it was \(request.URL!.absoluteString)")
             testFinished.fulfill()
         }
         
@@ -168,11 +161,11 @@ class TheNetworkTests: XCTestCase {
             XCTFail("in the error block, error was: \(error.localizedDescription)")
             testFinished.fulfill()
         }
-        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        let additionalParams = NSDictionary(object: "value", forKey: "key")
         Network.setBaseURLString(kNoAuthNeeded)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -182,7 +175,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testGetWithUsernameAndPassword() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             testFinished.fulfill()
@@ -197,7 +190,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBasicAuth(user: "hack", pass: "thegibson")
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -207,7 +200,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testGetWithWrongUsernameAndPassword() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTFail("in the success block, the request should have a 401 response but doesn't")
             testFinished.fulfill()
@@ -220,8 +213,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kAuthNeeded)
         Network.setBasicAuth(user: "hack", pass: "thegibsonWRONG")
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        NSLog("\(task.originalRequest.allHTTPHeaderFields)")
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -231,7 +223,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testGetJSON() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject!.isKindOfClass(NSDictionary.self), "result was not a dictionary")
@@ -252,7 +244,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kJSON)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -262,7 +254,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testGetXML() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(resultObject!.isKindOfClass(NSDictionary.self), "result was not a dictionary")
@@ -283,7 +275,7 @@ class TheNetworkTests: XCTestCase {
         Network.setBaseURLString(kXML)
         
         let task = Network.performDataTask(relativePath: nil, method: .GET, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.GET.rawValue, "task wasn't a GET")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -298,11 +290,11 @@ class TheNetworkTests: XCTestCase {
     */
     func testPostWithPameters() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
-            var body = NSString(data: request.HTTPBody!, encoding: NSUTF8StringEncoding)
+            let body = NSString(data: request.HTTPBody!, encoding: NSUTF8StringEncoding)
             XCTAssertNotNil(body, "body had no content for the POST")
             testFinished.fulfill()
         }
@@ -312,11 +304,11 @@ class TheNetworkTests: XCTestCase {
             XCTFail("in the error block, error was: \(error.localizedDescription)")
             testFinished.fulfill()
         }
-        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        let additionalParams = NSDictionary(object: "value", forKey: "key")
         Network.setBaseURLString(kNoAuthNeeded)
         
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
 
@@ -327,7 +319,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testJSONPostWithPameters() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
@@ -335,13 +327,9 @@ class TheNetworkTests: XCTestCase {
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")
             
-            var error: NSError?
-            let parsedJSON: AnyObject = NSJSONSerialization.JSONObjectWithData(bodyData!, options: .MutableContainers, error: &error)!
-            
+            let parsedJSON: AnyObject = try! NSJSONSerialization.JSONObjectWithData(bodyData!, options: .MutableContainers)
             XCTAssertNotNil(parsedJSON, "Request body was not valid JSON")
-            if let realError = error {
-                XCTFail("Parse error: \(realError.localizedDescription)")
-            }
+            
             if let jsonDict: NSDictionary = parsedJSON as? NSDictionary {
                 let found = jsonDict.valueForKey("key") as! String
                 XCTAssertEqual(found, "value")
@@ -357,13 +345,13 @@ class TheNetworkTests: XCTestCase {
             XCTFail("in the error block, error was: \(error.localizedDescription)")
             testFinished.fulfill()
         }
-        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        let additionalParams = NSDictionary(object: "value", forKey: "key")
         Network.setBaseURLString(kNoAuthNeeded)
         Network.bodyFormatter = BodyFormatterJSON()
         
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
-        if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields!["Content-Type"] {
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
+        if let contentType: AnyObject = task!.originalRequest!.allHTTPHeaderFields!["Content-Type"] {
             XCTAssertTrue(contentType as! String == "application/json; charset=utf-8", "content-type not set correctly")
         } else {
             XCTFail("content type header missing")
@@ -378,7 +366,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testXMLPostWithPameters() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
@@ -386,13 +374,9 @@ class TheNetworkTests: XCTestCase {
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")
             
-            var error: NSError?
-            let parsedXML: AnyObject = NSPropertyListSerialization.propertyListWithData(bodyData!, options: 0, format: nil, error: &error)!
-            
-            XCTAssertNotNil(parsedXML, "Request body was not valid XML")
-            if let realError = error {
-                XCTFail("Parse error: \(realError.localizedDescription)")
-            }
+            let parsedXML: AnyObject = try! NSPropertyListSerialization.propertyListWithData(bodyData!, options: .MutableContainers, format: nil)
+            XCTAssertNotNil(parsedXML, "Request body was not valid JSON")
+
             if let xmlDict: NSDictionary = parsedXML as? NSDictionary {
                 let found = xmlDict.valueForKey("key") as! String
                 XCTAssertEqual(found, "value")
@@ -408,13 +392,13 @@ class TheNetworkTests: XCTestCase {
             XCTFail("in the error block, error was: \(error.localizedDescription)")
             testFinished.fulfill()
         }
-        var additionalParams = NSDictionary(object: "value", forKey: "key")
+        let additionalParams = NSDictionary(object: "value", forKey: "key")
         Network.setBaseURLString(kNoAuthNeeded)
         Network.bodyFormatter = BodyFormatterPListXML() // change the default body formatter
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock, parameters: additionalParams)
         
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
-        if let contentType: AnyObject = task.originalRequest.allHTTPHeaderFields!["Content-Type"] {
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
+        if let contentType: AnyObject = task!.originalRequest!.allHTTPHeaderFields!["Content-Type"] {
             XCTAssertTrue(contentType as! String == "application/x-plist; charset=utf-8", "content-type not set correctly")
         } else {
             XCTFail("content type header missing")
@@ -430,14 +414,14 @@ class TheNetworkTests: XCTestCase {
     */
     func testCustomPostBody() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertEqual("cheers man", resultObject as! String, "result object was not what kNoAuthNeeded node server returns")
             
             let bodyData = request.HTTPBody
             XCTAssertNotNil(bodyData, "No body data for the POST")
-            var string = NSString(data: bodyData!, encoding: NSUTF8StringEncoding)!
+            let string = NSString(data: bodyData!, encoding: NSUTF8StringEncoding)!
             XCTAssertNotNil(string, "body string was nil")
             XCTAssertTrue(string.containsString("some crazy"), "didn't contain the string from our custom body formatter")
             testFinished.fulfill()
@@ -450,11 +434,11 @@ class TheNetworkTests: XCTestCase {
         }
         Network.setBaseURLString(kNoAuthNeeded)
         Network.bodyFormatter = BodyFormatterManual(block: {() -> NSData in
-            var string = "some crazy\nnew line\nstring with no \npattern\nat all"
+            let string = "some crazy\nnew line\nstring with no \npattern\nat all"
             return string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)!
         })
         let task = Network.performDataTask(relativePath: nil, method: .POST, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.originalRequest.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
+        XCTAssertEqual(task!.originalRequest!.HTTPMethod!, HTTP_METHOD.POST.rawValue, "task wasn't a POST")
         waitForExpectationsWithTimeout(4, handler: nil)
     }
     
@@ -470,7 +454,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testDownloadFile() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("ourLord.jpeg")
 
@@ -482,7 +466,13 @@ class TheNetworkTests: XCTestCase {
             XCTAssertTrue(fm.fileExistsAtPath(destinationPath), "file doesnt exist at download path")
             //better delete it
             var error: NSError?
-            fm.removeItemAtPath(destinationPath, error: &error)
+            do {
+                try fm.removeItemAtPath(destinationPath)
+            } catch let error1 as NSError {
+                error = error1
+            } catch {
+                XCTFail()
+            }
             XCTAssertNil(error, "Error deleting file: \(error)")
             testFinished.fulfill()
         }
@@ -499,7 +489,7 @@ class TheNetworkTests: XCTestCase {
         
         let task = Network.download(fullSourceURL: remoteGabe, destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         XCTAssertNotNil(task, "The download task was nil")
-        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
+        XCTAssertEqual(task!.state, NSURLSessionTaskState.Running, "download not started")
         waitForExpectationsWithTimeout(20, handler: nil)
     }
     
@@ -510,7 +500,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testCancelDownload() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("5mb.zip")
         let fm = NSFileManager()
@@ -522,8 +512,13 @@ class TheNetworkTests: XCTestCase {
         
         let errorBlock: NetworkErrorBlock = { (resultObject, error, request, response) -> Void in
             XCTAssertEqual(error.code, NSURLErrorCancelled, "task was not cancelled, it was \(error.localizedDescription)")
-            var error: NSError?
-            fm.removeItemAtPath(destinationPath, error: &error)
+            do {
+                if (fm.fileExistsAtPath(destinationPath)) {
+                    try fm.removeItemAtPath(destinationPath)
+                }
+            } catch {
+                XCTFail()
+            }
             testFinished.fulfill()
         }
         
@@ -533,10 +528,10 @@ class TheNetworkTests: XCTestCase {
         
         let task = Network.download(fullSourceURL: "http://ipv4.download.thinkbroadband.com/5MB.zip", destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
         XCTAssertNotNil(task, "The download task was nil")
-        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "download not started")
+        XCTAssertEqual(task!.state, NSURLSessionTaskState.Running, "download not started")
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (Int64)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), {
-            task.cancel()
+            task!.cancel()
         });
         
         waitForExpectationsWithTimeout(10, handler: nil)
@@ -547,8 +542,8 @@ class TheNetworkTests: XCTestCase {
     */
     func testAddDownloadProgressBlock() {
         
-        var testFinished = expectationWithDescription("test finished")
-        var progressReached = expectationWithDescription("progress block was called")
+        let testFinished = expectationWithDescription("test finished")
+        let progressReached = expectationWithDescription("progress block was called")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("1mb.mp4")
         let fm = NSFileManager()
@@ -557,9 +552,13 @@ class TheNetworkTests: XCTestCase {
             XCTAssertNotNil(resultObject, "nil result obj")
             XCTAssertTrue(fm.fileExistsAtPath(destinationPath), "file doesnt exist at download path")
             //better delete it
-            var error: NSError?
-            fm.removeItemAtPath(destinationPath, error: &error)
-            XCTAssertNil(error, "Error deleting file: \(error)")
+            do {
+                if (fm.fileExistsAtPath(destinationPath)) {
+                    try fm.removeItemAtPath(destinationPath)
+                }
+            } catch {
+                XCTFail()
+            }
             testFinished.fulfill()
         }
         
@@ -578,8 +577,8 @@ class TheNetworkTests: XCTestCase {
         }
         
         let task = Network.download(fullSourceURL: remoteGabe, destinationPathString: destinationPath, successBlock: successBlock, errorBlock: errorBlock)
-        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
-        Network.addDownloadProgressBlock(progressBlock, task: task)
+        XCTAssertEqual(task!.state, NSURLSessionTaskState.Running, "task not started")
+        Network.addDownloadProgressBlock(progressBlock, task: task!)
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
@@ -595,7 +594,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testuploadSourceURL() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
@@ -611,14 +610,13 @@ class TheNetworkTests: XCTestCase {
         let progressBlock: NetworkUploadProgressBlock = { (bytesSent, totalBytesSent, totalBytesExpectedToSend) in
             NSLog("bytes sent: \(bytesSent), TotalBytesSent: \(totalBytesSent), expectedToSend: \(totalBytesExpectedToSend)")
         }
-        
-        let fm = NSFileManager()
+
         let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
         XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
         let sourceURL = NSURL.fileURLWithPath(sourcePath!)
         
-        let task = Network.upload(sourceURL: sourceURL!, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
-        XCTAssertEqual(task.state, NSURLSessionTaskState.Running, "task not started")
+        let task = Network.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        XCTAssertEqual(task!.state, NSURLSessionTaskState.Running, "task not started")
         
         
         waitForExpectationsWithTimeout(10, handler: nil)
@@ -632,7 +630,7 @@ class TheNetworkTests: XCTestCase {
     */
     func testCanceluploadSourceURL() {
         
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         let destinationDir: NSArray = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as Array
         let destinationPath = destinationDir.objectAtIndex(0).stringByAppendingPathComponent("1mb.mp4")
         let fm = NSFileManager()
@@ -644,8 +642,13 @@ class TheNetworkTests: XCTestCase {
         
         let errorBlock: NetworkErrorBlock = { (resultObject, error, request, response) -> Void in
             XCTAssertEqual(error.code, NSURLErrorCancelled, "task was not cancelled, it was \(error.localizedDescription)")
-            var error: NSError?
-            fm.removeItemAtPath(destinationPath, error: &error)
+            do {
+                if (fm.fileExistsAtPath(destinationPath)) {
+                    try fm.removeItemAtPath(destinationPath)
+                }
+            } catch {
+                XCTFail()
+            }
             testFinished.fulfill()
         }
         
@@ -657,8 +660,8 @@ class TheNetworkTests: XCTestCase {
         XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
         let sourceURL = NSURL.fileURLWithPath(sourcePath!)
         
-        let task = Network.upload(sourceURL: sourceURL!, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
-        task.cancel()
+        let task = Network.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
+        task!.cancel()
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
@@ -668,8 +671,8 @@ class TheNetworkTests: XCTestCase {
     */
     func testAddUploadSourceURLProgressBlock() {
         
-        var testFinished = expectationWithDescription("test finished")
-        var progressReached = expectationWithDescription("progress block was called")
+        let testFinished = expectationWithDescription("test finished")
+        let progressReached = expectationWithDescription("progress block was called")
         
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
@@ -691,20 +694,19 @@ class TheNetworkTests: XCTestCase {
             }
         }
         
-        let fm = NSFileManager()
         let sourcePath = NSBundle.mainBundle().pathForResource("ourLord", ofType: "jpg")
         XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
         
-        let sourceURL = NSURL.fileURLWithPath(sourcePath!)!
+        let sourceURL = NSURL.fileURLWithPath(sourcePath!)
         
         let task = Network.upload(sourceURL: sourceURL, destinationFullURLString: kMultipartUpload, successBlock: successBlock, errorBlock: errorBlock, progressBlock: progressBlock)
-        Network.addUploadProgressBlock(progressBlock, task: task)
+        Network.addUploadProgressBlock(progressBlock, task: task!)
         
         waitForExpectationsWithTimeout(10, handler: nil)
     }
     
     func testMultipartFormData() {
-        var testFinished = expectationWithDescription("test finished")
+        let testFinished = expectationWithDescription("test finished")
         
         let successBlock: NetworkSuccessBlock = { (resultObject, request, response) -> Void in
             XCTAssertNotNil(resultObject, "nil result obj")
@@ -724,12 +726,12 @@ class TheNetworkTests: XCTestCase {
         XCTAssertNotNil(sourcePath, "Couldn't find local picture to upload")
         let data = fm.contentsAtPath(sourcePath!)
         XCTAssertNotNil(data, "data was nil")        
-        var formDataFile = MultipartFormFile(formKeyName: "image", fileName: "ourlord.jpg", data: data!, mimetype: "image/jpeg")
-        var formDataFile2 = MultipartFormFile(formKeyName: "image2", fileName: "ourlord2.jpg", data: data!, mimetype: "image/jpeg")
+        let formDataFile = MultipartFormFile(formKeyName: "image", fileName: "ourlord.jpg", data: data!, mimetype: "image/jpeg")
+        let formDataFile2 = MultipartFormFile(formKeyName: "image2", fileName: "ourlord2.jpg", data: data!, mimetype: "image/jpeg")
         let arrayOfFiles = [formDataFile, formDataFile2]
         
         Network.setBaseURLString(kMultipartUpload)
-        let uploadTask = Network.multipartFormPost(relativePath: nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)
+        Network.multipartFormPost(nil, parameters: params, multipartFormFiles: arrayOfFiles, successBlock: successBlock, errorBlock: errorBlock)
         waitForExpectationsWithTimeout(10, handler: nil)
     }
 
